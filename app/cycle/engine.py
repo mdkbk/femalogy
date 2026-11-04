@@ -3,10 +3,21 @@
 Pure functions, no database. Everything here is an ESTIMATE and the app must
 always present it that way (never as contraception).
 
-Evidence behind the defaults (see app/knowledge/sources.json):
-- Mean cycle 29.3 days, luteal 12.4 days (Bull 2019, 600k cycles)
-- Luteal mean 11.7, median 12 days; luteal length shifts >3 days
-  between cycles in 58.8% of women (Najmabadi 2020)
+Cycle length model (see docs/prediction-model.md for the full backtest):
+Empirical Bayes. Her estimate is a blend of her own recent cycles and the
+population average; the weight on her own data grows with every cycle she
+logs. Before blending, a cycle about twice her usual length is treated as a
+period that wasn't logged (split in two), and single odd cycles are clipped.
+Parameters were fitted on, and the method validated against, the Marquette
+fertility study data (159 women, 1,665 cycles with measured ovulation),
+scored on held-out women only:
+- next-period error 2.24 days on average vs 2.32 for a plain median
+- with one unlogged period in her history: 2.12 days vs 6.21
+- the 80% range really contains the next period 80% of the time
+
+Other evidence (app/knowledge/sources.json):
+- Mean cycle 29.3 days (Bull 2019, 600k cycles); luteal phase median 12-13
+  days depending on how it's measured (Najmabadi 2020, Marquette data)
 - Follicular phase drives most of the variation (Fehring 2006)
 """
 
@@ -18,9 +29,18 @@ from enum import StrEnum
 from itertools import pairwise
 from statistics import median
 
-DEFAULT_CYCLE_LENGTH = 28  # only used until she has logged real cycles
+DEFAULT_CYCLE_LENGTH = 28  # kept for reference; the model starts from POP_MEAN
 DEFAULT_PERIOD_LENGTH = 5
-DEFAULT_LUTEAL_LENGTH = 12  # median luteal length (Najmabadi 2020)
+# Ovulation = next period minus this. 13 beat 12 and 14 when predicting measured
+# ovulation in the Marquette data (error 2.3 vs 2.6 days for 12).
+DEFAULT_LUTEAL_LENGTH = 13
+
+# Fitted on the Marquette data (mean over 5 cross-validation folds).
+POP_MEAN = 29.3  # average cycle length across women
+WITHIN_VAR = 9.08  # how much one woman's cycles vary month to month (days^2)
+BETWEEN_VAR = 7.79  # how much women's own averages differ from each other (days^2)
+POP_SD = 3.89  # spread of all cycles; used to clip odd cycles when history is short
+RANGE_Z = 1.03  # calibrated so the predicted range holds the real date 80% of the time
 
 MIN_CYCLE = 15  # anything shorter is probably a logging mistake, ignore it
 MAX_CYCLE = 90
@@ -65,6 +85,9 @@ class CycleStatus:
     days_until_next_period: int
     confidence: Confidence
     complete_cycles_logged: int
+    next_period_earliest: date | None = None
+    next_period_latest: date | None = None
+    possible_missed_period: date | None = None  # ask her: did a period start around here?
     flags: list[str] = field(default_factory=list)
 
 
@@ -75,12 +98,49 @@ def cycle_lengths(period_starts: list[date]) -> list[int]:
     return [n for n in lengths if MIN_CYCLE <= n <= MAX_CYCLE]
 
 
+def split_missed(lengths: list[int]) -> tuple[list[float], int | None]:
+    """A cycle about twice her usual length is most likely a period that wasn't
+    logged. Count it as two cycles of half the length. Returns the cleaned
+    lengths and the index of the last cycle that looked like a missed log."""
+    out: list[float] = []
+    last_missed = None
+    for i, x in enumerate(lengths):
+        others = [y for j, y in enumerate(lengths) if j != i]
+        ref = median(others) if len(others) >= 2 else POP_MEAN
+        if x >= 40 and 1.6 * ref <= x <= 2.4 * ref:
+            out += [x / 2, x / 2]
+            last_missed = i
+        else:
+            out.append(float(x))
+    return out, last_missed
+
+
+def _clip(h: list[float]) -> list[float]:
+    """Limit how far one odd cycle can pull the estimate."""
+    if len(h) >= 3:
+        mid, spread = median(h), 2.5 * WITHIN_VAR ** 0.5
+    else:
+        mid, spread = POP_MEAN, 2.5 * POP_SD
+    return [min(max(x, mid - spread), mid + spread) for x in h]
+
+
+def _blend(lengths: list[int], settings: CycleSettings) -> tuple[float, float]:
+    """(estimate, predictive SD) for her next cycle length."""
+    cleaned, _ = split_missed(lengths)
+    h = _clip(cleaned[-CYCLES_FOR_ESTIMATE:])
+    if not h and settings.avg_cycle_length:
+        h = [float(settings.avg_cycle_length)]  # her onboarding answer counts as one cycle
+    n = len(h)
+    if n == 0:
+        return POP_MEAN, (WITHIN_VAR + BETWEEN_VAR) ** 0.5
+    w = n * BETWEEN_VAR / (n * BETWEEN_VAR + WITHIN_VAR)
+    est = w * (sum(h) / n) + (1 - w) * POP_MEAN
+    post_var = 1 / (1 / BETWEEN_VAR + n / WITHIN_VAR)
+    return est, (WITHIN_VAR + post_var) ** 0.5
+
+
 def estimate_cycle_length(lengths: list[int], settings: CycleSettings) -> int:
-    recent = lengths[-CYCLES_FOR_ESTIMATE:]
-    if recent:
-        # median is robust to one odd month (illness, travel, stress)
-        return round(median(recent))
-    return settings.avg_cycle_length or DEFAULT_CYCLE_LENGTH
+    return round(_blend(lengths, settings)[0])
 
 
 def estimate_confidence(lengths: list[int]) -> Confidence:
@@ -127,7 +187,9 @@ def compute_status(
         raise ValueError("need at least one period start date on or before today")
 
     lengths = cycle_lengths(starts)
-    cycle_len = estimate_cycle_length(lengths, settings)
+    est, sd = _blend(lengths, settings)
+    cycle_len = round(est)
+    half_range = max(1, round(RANGE_Z * sd))
 
     if period_lengths:
         period_len = round(median(period_lengths[-CYCLES_FOR_ESTIMATE:]))
@@ -155,16 +217,30 @@ def compute_status(
     if cycle_day > NO_PERIOD_RED_FLAG_DAYS:
         flags.append("no_period_90_days")
 
-    confidence = estimate_confidence(lengths)
-    recent = lengths[-CYCLES_FOR_ESTIMATE:]
+    cleaned = [round(x) for x in split_missed(lengths)[0]]
+    confidence = estimate_confidence(cleaned)
+    recent = cleaned[-CYCLES_FOR_ESTIMATE:]
     if len(recent) >= 2 and max(recent) - min(recent) > HIGH_VARIABILITY_RANGE:
         flags.append("high_variability")
     if len(lengths) < 2:
         flags.append("needs_more_data")
 
     next_period = cycle_start + timedelta(days=cycle_len)
+    earliest = next_period - timedelta(days=half_range)
+    latest = next_period + timedelta(days=half_range)
     if next_period < today:
         next_period = today  # overdue: best guess is "any day now"
+    earliest = max(earliest, today)
+    latest = max(latest, today)
+
+    # a gap that looks like an unlogged period: point at roughly when it was
+    possible_missed = None
+    real = sorted(set(starts))
+    _, missed_i = split_missed(lengths)
+    if missed_i is not None and len(lengths) == len(real) - 1:
+        a, b = real[missed_i], real[missed_i + 1]
+        possible_missed = a + (b - a) / 2
+        flags.append("possible_missed_period")
 
     return CycleStatus(
         today=today,
@@ -179,6 +255,9 @@ def compute_status(
         days_until_next_period=(next_period - today).days,
         confidence=confidence,
         complete_cycles_logged=len(lengths),
+        next_period_earliest=earliest,
+        next_period_latest=latest,
+        possible_missed_period=possible_missed,
         flags=flags,
     )
 

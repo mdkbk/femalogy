@@ -1,0 +1,59 @@
+=== Next cycle length, clean histories (held-out women) ===
+                                      MAE  within2  within3     N
+method                                                           
+EB robust + missed-log, whole days  2.237    0.678    0.802  1665
+EB robust                           2.243    0.584    0.748  1665
+EB plain                            2.248    0.583    0.743  1665
+EB robust + missed-log              2.252    0.583    0.745  1665
+EB median + missed-log, whole days  2.255    0.680    0.799  1665
+EB median + missed-log              2.269    0.593    0.740  1665
+mean last 6                         2.299    0.631    0.757  1665
+current (median last 6)             2.322    0.674    0.780  1665
+fixed 28                            2.857    0.586    0.721  1665
+
+=== MAE by number of past cycles ===
+n                                      0     1     2   3-5    6+
+method                                                          
+EB median + missed-log              3.10  2.49  2.20  2.29  2.08
+EB median + missed-log, whole days  3.05  2.49  2.16  2.28  2.07
+EB plain                            3.10  2.49  2.20  2.26  2.05
+EB robust                           3.10  2.47  2.18  2.25  2.05
+EB robust + missed-log              3.10  2.50  2.18  2.25  2.07
+EB robust + missed-log, whole days  3.05  2.50  2.14  2.23  2.06
+current (median last 6)             3.21  2.69  2.32  2.36  2.08
+fixed 28                            3.21  2.94  2.98  2.97  2.71
+mean last 6                         3.21  2.69  2.31  2.27  2.07
+
+=== One past period NOT logged (two cycles merged) ===
+                                      MAE  within2  within3     N
+method                                                           
+EB robust + missed-log, whole days  2.115    0.705    0.820  1358
+EB robust + missed-log              2.130    0.610    0.769  1358
+EB median + missed-log, whole days  2.224    0.698    0.815  1358
+EB median + missed-log              2.242    0.620    0.758  1358
+fixed 28                            2.807    0.596    0.731  1358
+EB robust                           2.879    0.450    0.612  1358
+EB plain                            5.775    0.198    0.271  1358
+current (median last 6)             6.212    0.531    0.638  1358
+mean last 6                         8.605    0.184    0.240  1358
+
+=== Prediction range for the chosen model ===
+z for 80% real coverage: 1.03
+nominal 60%: covers 72.7% of real next periods, avg width ±2.8 days
+nominal 80% (calibrated): covers 80.1% of real next periods, avg width ±3.5 days
+nominal 90%: covers 92.6% of real next periods, avg width ±5.6 days
+
+=== Ovulation day: next period minus luteal length, vs measured ovulation ===
+                                                                MAE  within2  bias
+with                         luteal                                               
+predicted length             12                                2.60     0.45  1.25
+                             13                                2.30     0.53  0.25
+                             14                                2.28     0.55 -0.75
+                             personal median luteal (else 13)  2.02     0.62  0.15
+true length (after the fact) 12                                1.97     0.72  1.28
+                             13                                1.71     0.80  0.28
+                             14                                1.89     0.75 -0.72
+                             personal median luteal (else 13)  1.37     0.85  0.18
+
+=== Population parameters (mean over folds) ===
+{'mu': 29.296, 'sigma2': 9.077, 'tau2': 7.793, 'luteal_median': 13.0, 'total_sd': 3.885}
