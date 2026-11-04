@@ -1,0 +1,16 @@
+# secrets and local data: never commit
+.env
+*.db
+*.db-journal
+# per-machine tools and installs
+.venv/
+.tools/
+node_modules/
+dist/
+*.egg-info/
+*.tsbuildinfo
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.DS_Store
