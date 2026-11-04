@@ -1,9 +1,88 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { api } from '../api'
+import { api, localToday, type Period } from '../api'
 import { useAuth } from '../auth'
 import { CycleRing, Disclaimer, ErrorBox, FirstPeriod, InfoIcon, InsightCard, Loading, MythCard, TipCard, WarnIcon } from '../components/ui'
 import { daysBetween, fmtLong, fmtShort, PHASE, useLoad } from '../lib'
+
+/** Period logging right on Today: everything else is estimated from these dates. */
+function PeriodQuick({ periods, late, onSaved }: { periods: Period[]; late: boolean; onSaved: () => void }) {
+  const today = localToday()
+  const latest = periods.length ? periods[periods.length - 1] : null
+  const ongoing = latest && !latest.end_date && daysBetween(latest.start_date, today) <= 14 ? latest : null
+  const [open, setOpen] = useState(false)
+  const [date, setDate] = useState(today)
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
+  const run = async (fn: () => Promise<unknown>, done: string) => {
+    setBusy(true)
+    setMsg(null)
+    try {
+      await fn()
+      setMsg({ ok: true, text: done })
+      setOpen(false)
+      onSaved()
+    } catch (x) {
+      setMsg({ ok: false, text: (x as Error).message })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="period-quick">
+      {late && !ongoing && <p style={{ fontWeight: 700 }}>Has your period started? Log it so your phases stay right.</p>}
+      {ongoing ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+          <span className="small" style={{ fontWeight: 700 }}>
+            Period since {fmtShort(ongoing.start_date)} · day {daysBetween(ongoing.start_date, today) + 1}
+          </span>
+          {!open && (
+            <button type="button" className="btn small quiet" disabled={busy}
+              onClick={() => run(() => api.updatePeriod(ongoing.id, ongoing.start_date, today), 'Saved. Your period end is logged.')}>
+              My period ended today
+            </button>
+          )}
+          {!open && <button type="button" className="linklike" onClick={() => { setDate(today); setOpen(true) }}>Ended another day</button>}
+          {open && (
+            <form className="row" style={{ alignItems: 'flex-end' }}
+              onSubmit={(e) => { e.preventDefault(); run(() => api.updatePeriod(ongoing.id, ongoing.start_date, date), 'Saved. Your period end is logged.') }}>
+              <label className="field">Ended on
+                <input type="date" required min={ongoing.start_date} max={today} value={date} onChange={(e) => setDate(e.target.value)} />
+              </label>
+              <button className="btn small" disabled={busy}>Save</button>
+              <button type="button" className="btn small quiet" onClick={() => setOpen(false)}>Cancel</button>
+            </form>
+          )}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+          {!open && (
+            <button type="button" className="btn small quiet" disabled={busy}
+              onClick={() => run(() => api.addPeriod(today, null), 'Saved. Your phases are updated.')}>
+              <span className="dot" style={{ background: '#C0465F' }} aria-hidden="true" />
+              My period started today
+            </button>
+          )}
+          {!open && <button type="button" className="linklike" onClick={() => { setDate(today); setOpen(true) }}>It started another day</button>}
+          {open && (
+            <form className="row" style={{ alignItems: 'flex-end' }}
+              onSubmit={(e) => { e.preventDefault(); run(() => api.addPeriod(date, null), 'Saved. Your phases are updated.') }}>
+              <label className="field">Started on
+                <input type="date" required max={today} value={date} onChange={(e) => setDate(e.target.value)} />
+              </label>
+              <button className="btn small" disabled={busy}>Save</button>
+              <button type="button" className="btn small quiet" onClick={() => setOpen(false)}>Cancel</button>
+            </form>
+          )}
+          <Link to="/plan" className="small" style={{ fontWeight: 700 }}>All periods</Link>
+        </div>
+      )}
+      {msg && <p role="status" className={msg.ok ? 'success small' : 'error small'}>{msg.text}</p>}
+    </div>
+  )
+}
 
 const FLAG_TEXT: Record<string, string> = {
   period_late: 'Your period is later than expected.',
@@ -13,7 +92,7 @@ const FLAG_TEXT: Record<string, string> = {
 
 export default function Today() {
   const { user } = useAuth()
-  const { data, error, loading, reload } = useLoad(() => Promise.all([api.today(), api.sync()]))
+  const { data, error, loading, reload } = useLoad(() => Promise.all([api.today(), api.sync(), api.periods()]))
   const [area, setArea] = useState('all')
 
   if (loading && !data) {
@@ -39,7 +118,7 @@ export default function Today() {
     )
   }
 
-  const [t, s] = data
+  const [t, s, periods] = data
   const ph = PHASE[t.phase]
   const ovuAgo = daysBetween(t.ovulation_date_estimate, t.date)
   const confidence = { low: 'Low', medium: 'Medium', high: 'High' }[t.confidence]
@@ -75,6 +154,7 @@ export default function Today() {
             <Link to="/check-in" className="btn">Check in for today</Link>
             <Link to="/guide" className="link-strong" style={{ color: ph.ink }}>About all four phases</Link>
           </div>
+          <PeriodQuick periods={periods} late={t.flags.includes('period_late')} onSaved={reload} />
         </div>
       </section>
 
