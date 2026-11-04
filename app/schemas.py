@@ -26,6 +26,9 @@ class ProfileOut(ProfileIn):
     email: EmailStr
 
 
+MAX_PERIOD_DAYS = 15
+
+
 class PeriodIn(BaseModel):
     start_date: date
     end_date: date | None = None
@@ -34,6 +37,8 @@ class PeriodIn(BaseModel):
     def end_after_start(self):
         if self.end_date and self.end_date < self.start_date:
             raise ValueError("end_date can't be before start_date")
+        if self.end_date and (self.end_date - self.start_date).days + 1 > MAX_PERIOD_DAYS:
+            raise ValueError(f"a period can't last more than {MAX_PERIOD_DAYS} days; check the dates")
         return self
 
 

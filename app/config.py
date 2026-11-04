@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     # Fernet key for encrypting check-in notes. Generate with:
     # python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
     field_encryption_key: str = ""
+    # web frontends allowed to call the API, comma separated
+    cors_origins: str = "http://localhost:5173,http://localhost:3000,http://localhost:8081"
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
 
 @lru_cache
