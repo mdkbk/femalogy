@@ -65,7 +65,9 @@ async function save(periods: Period[], days: Set<string>, today: string) {
   return deletes.length + patches.length + posts.length
 }
 
-export function PeriodSheet({ open, onClose, onSaved }: { open: boolean; onClose: () => void; onSaved: () => void }) {
+export function PeriodSheet({ open, onClose, onSaved, startMonth }: {
+  open: boolean; onClose: () => void; onSaved: () => void; startMonth?: string
+}) {
   const today = localToday()
   const ref = useRef<HTMLDialogElement>(null)
   const [periods, setPeriods] = useState<Period[] | null>(null)
@@ -80,7 +82,7 @@ export function PeriodSheet({ open, onClose, onSaved }: { open: boolean; onClose
     if (open && !dlg.open) {
       dlg.showModal()
       setErr('')
-      const d = parseISO(today)
+      const d = parseISO(startMonth ?? today)
       setMonth(new Date(d.getFullYear(), d.getMonth(), 1))
       setPeriods(null)
       api.periods().then((ps) => {
@@ -89,7 +91,7 @@ export function PeriodSheet({ open, onClose, onSaved }: { open: boolean; onClose
       }).catch((e: Error) => setErr(e.message))
     }
     if (!open && dlg.open) dlg.close()
-  }, [open, today])
+  }, [open, today, startMonth])
 
   const grid = useMemo(() => {
     const first = new Date(month.getFullYear(), month.getMonth(), 1)

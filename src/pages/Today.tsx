@@ -4,7 +4,7 @@ import { api } from '../api'
 import { PeriodSheet } from '../components/PeriodSheet'
 import { useAuth } from '../auth'
 import { CycleRing, Disclaimer, ErrorBox, FirstPeriod, InfoIcon, InsightCard, Loading, MythCard, TipCard, WarnIcon } from '../components/ui'
-import { daysBetween, fmtLong, fmtShort, PHASE, useLoad } from '../lib'
+import { daysBetween, fmtDayMonth, fmtLong, fmtShort, PHASE, useLoad } from '../lib'
 
 const FLAG_TEXT: Record<string, string> = {
   period_late: 'Your period is later than expected.',
@@ -17,6 +17,8 @@ export default function Today() {
   const { data, error, loading, reload } = useLoad(() => Promise.all([api.today(), api.sync()]))
   const [area, setArea] = useState('all')
   const [logging, setLogging] = useState(false)
+  const [sheetMonth, setSheetMonth] = useState<string | undefined>(undefined)
+  const [gapBusy, setGapBusy] = useState(false)
 
   if (loading && !data) {
     return (
@@ -78,7 +80,7 @@ export default function Today() {
           )}
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginTop: 4 }}>
             <Link to="/check-in" className="btn">Check in for today</Link>
-            <button type="button" className="btn quiet" onClick={() => setLogging(true)}>
+            <button type="button" className="btn quiet" onClick={() => { setSheetMonth(undefined); setLogging(true) }}>
               <span className="dot" style={{ background: '#C0465F' }} aria-hidden="true" />
               Log period
             </button>
@@ -86,6 +88,30 @@ export default function Today() {
           <Link to="/guide" className="link-strong" style={{ color: ph.ink, alignSelf: 'flex-start' }}>About all four phases</Link>
         </div>
       </section>
+
+      {t.possible_missed_period && t.possible_missed_period_id && (
+        <section className="card fx-up" aria-labelledby="gap-title"
+          style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16, border: '1.5px dashed #d8bfb7', boxShadow: 'none' }}>
+          <div style={{ flex: '999 1 320px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <strong id="gap-title">Did a period start around {fmtShort(t.possible_missed_period)}?</strong>
+            <span className="small muted">
+              There's a long gap in your log that looks like a period wasn't saved. Your estimates already allow for that,
+              but telling us makes them more accurate.
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+            <button type="button" className="btn small" onClick={() => { setSheetMonth(t.possible_missed_period!); setLogging(true) }}>
+              Yes, add it
+            </button>
+            <button type="button" className="btn small quiet" disabled={gapBusy} onClick={async () => {
+              setGapBusy(true)
+              try { await api.confirmGap(t.possible_missed_period_id!); reload() } finally { setGapBusy(false) }
+            }}>
+              No, it was one long cycle
+            </button>
+          </div>
+        </section>
+      )}
 
       {t.red_flags.length > 0 && (
         <div className="alert fx-up" role="alert">
@@ -104,6 +130,9 @@ export default function Today() {
               {t.days_until_next_period === 0 ? 'any day now' : `in ${t.days_until_next_period} day${t.days_until_next_period === 1 ? '' : 's'}`}
             </span>
             <span className="muted">around {fmtShort(t.next_period_estimate)}</span>
+            {t.next_period_latest > t.next_period_earliest && (
+              <span className="small muted">likely {fmtDayMonth(t.next_period_earliest)} to {fmtDayMonth(t.next_period_latest)}</span>
+            )}
           </Link>
           <Link to="/plan" className="stat fx-card">
             <span className="label">Ovulation (estimate)</span>
@@ -170,7 +199,7 @@ export default function Today() {
       </section>
 
       <Disclaimer>{s.disclaimer}</Disclaimer>
-      <PeriodSheet open={logging} onClose={() => setLogging(false)} onSaved={reload} />
+      <PeriodSheet open={logging} startMonth={sheetMonth} onClose={() => setLogging(false)} onSaved={reload} />
     </main>
   )
 }
