@@ -84,6 +84,8 @@ class TodayOut(BaseModel):
     phase_title: str
     is_estimate: bool = True
     cycle_length_estimate: int
+    period_length_estimate: int
+    ovulation_day_estimate: int
     ovulation_date_estimate: date
     next_period_estimate: date
     days_until_next_period: int

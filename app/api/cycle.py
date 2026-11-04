@@ -99,6 +99,8 @@ def today_view(
         phase=st.phase.value,
         phase_title=guide.title,
         cycle_length_estimate=st.cycle_length_estimate,
+        period_length_estimate=st.period_length_estimate,
+        ovulation_day_estimate=st.ovulation_day_estimate,
         ovulation_date_estimate=st.ovulation_date_estimate,
         next_period_estimate=st.next_period_estimate,
         days_until_next_period=st.days_until_next_period,
