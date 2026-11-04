@@ -1,0 +1,45 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: femalogy-backend
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: femalogy
+          POSTGRES_PASSWORD: femalogy
+          POSTGRES_DB: femalogy_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U femalogy"
+          --health-interval 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://femalogy:femalogy@localhost:5432/femalogy_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen --extra dev --python 3.12
+      - run: uv run ruff check .
+      # migrations must apply cleanly on real Postgres
+      - run: uv run alembic upgrade head
+        env:
+          DATABASE_URL: postgresql+psycopg://femalogy:femalogy@localhost:5432/femalogy_test
+      - run: uv run pytest -q
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: femalogy-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run build   # type check + production build
