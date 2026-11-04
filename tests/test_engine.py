@@ -29,16 +29,18 @@ def phase_on(day_number, history, settings=None):
 @pytest.mark.parametrize("length", [21, 28, 35])
 def test_phases_line_up_for_regular_cycles(length):
     hist = starts(length, length, length)
-    ov = length - 12
+    st = phase_on(1, hist)
+    est = st.cycle_length_estimate
+    # with 3 cycles the model mostly trusts her, but still leans a little toward the average
+    assert min(length, 29) <= est <= max(length, 30)
+    ov = est - 13
+    assert st.ovulation_day_estimate == ov
+    assert st.next_period_estimate == hist[-1] + timedelta(days=est)
     assert phase_on(1, hist).phase == Phase.MENSTRUAL
     assert phase_on(5, hist).phase == Phase.MENSTRUAL
     assert phase_on(ov, hist).phase == Phase.OVULATION
     assert phase_on(ov + 2, hist).phase == Phase.LUTEAL
-    assert phase_on(length, hist).phase == Phase.LUTEAL
-    st = phase_on(1, hist)
-    assert st.cycle_length_estimate == length
-    assert st.ovulation_day_estimate == ov
-    assert st.next_period_estimate == hist[-1] + timedelta(days=length)
+    assert phase_on(est, hist).phase == Phase.LUTEAL
 
 
 def test_follicular_exists_in_28_day_cycle():
@@ -48,7 +50,7 @@ def test_follicular_exists_in_28_day_cycle():
 
 def test_single_period_uses_onboarding_answer_and_low_confidence():
     st = compute_status([D0], D0 + timedelta(days=9), CycleSettings(avg_cycle_length=32))
-    assert st.cycle_length_estimate == 32
+    assert 30 <= st.cycle_length_estimate <= 32  # her answer counts, blended with the average
     assert st.cycle_day == 10
     assert st.confidence == Confidence.LOW
     assert "needs_more_data" in st.flags
@@ -57,7 +59,7 @@ def test_single_period_uses_onboarding_answer_and_low_confidence():
 def test_median_ignores_one_odd_cycle():
     hist = starts(29, 29, 45, 29, 29)
     st = compute_status(hist, hist[-1])
-    assert st.cycle_length_estimate == 29
+    assert 29 <= st.cycle_length_estimate <= 30  # one odd month moves it a day at most
 
 
 def test_logging_mistakes_are_dropped():
@@ -137,3 +139,43 @@ def test_calendar_first_day_matches_status_even_when_late():
     for offset in (0, 5, 13, 20):  # normal mid-cycle days agree too
         s2 = compute_status(hist, hist[-1] + timedelta(days=offset))
         assert phase_calendar(s2, 1)[0][1] == s2.phase
+
+
+# ---- prediction model (fitted and backtested on the Marquette data) ----
+
+def test_unlogged_period_does_not_stretch_the_cycle():
+    # her real case: Sep 1, then Oct 22 (51 days) - most likely a period in between wasn't logged
+    st = compute_status([date(2026, 9, 1), date(2026, 10, 22)], date(2026, 11, 4))
+    assert 26 <= st.cycle_length_estimate <= 30  # not 51
+    assert "possible_missed_period" in st.flags
+    assert date(2026, 9, 20) <= st.possible_missed_period <= date(2026, 10, 2)
+    assert st.days_until_next_period < 20
+
+
+def test_truly_long_cycles_are_not_split():
+    hist = starts(44, 46, 45, 44)  # consistently ~45 days: that's her, not missed logs
+    st = compute_status(hist, hist[-1])
+    assert st.cycle_length_estimate >= 40
+    assert "possible_missed_period" not in st.flags
+
+
+def test_estimate_leans_on_population_until_she_has_data():
+    one = compute_status(starts(34), D0 + timedelta(days=40))
+    many = compute_status(starts(34, 34, 34, 34, 34, 34), D0 + timedelta(days=34 * 6 + 1))
+    assert one.cycle_length_estimate < 34  # one cycle: pulled toward ~29
+    assert many.cycle_length_estimate >= 33  # six steady cycles: mostly hers
+
+
+def test_range_contains_estimate_and_narrows_with_data():
+    few = compute_status(starts(29), D0 + timedelta(days=30))
+    lots = compute_status(starts(29, 29, 29, 29, 29, 29), D0 + timedelta(days=29 * 6 + 1))
+    for st in (few, lots):
+        assert st.next_period_earliest <= st.next_period_estimate <= st.next_period_latest
+    width = lambda s: (s.next_period_latest - s.next_period_earliest).days  # noqa: E731
+    assert width(lots) <= width(few)
+
+
+def test_ovulation_uses_13_day_luteal():
+    hist = starts(29, 29)
+    st = compute_status(hist, hist[-1])
+    assert st.ovulation_day_estimate == st.cycle_length_estimate - 13

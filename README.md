@@ -73,10 +73,14 @@ tests/                   engine, knowledge base and API tests
 
 ## How the engine estimates things
 
-- Cycle length = median of her last 6 complete cycles (one odd month doesn't wreck it). Before 2 cycles are logged it uses her onboarding answer, else 28.
-- Ovulation day = cycle length − 12 (median luteal length, Najmabadi 2020), shown as a 3-day window.
+Full write-up with the backtest: [docs/prediction-model.md](docs/prediction-model.md).
+
+- Cycle length = empirical-Bayes blend of her last 6 cycles and the population average (29.3 days). The more she logs, the more it trusts her own data. Fitted and validated on real cycles (Marquette study, 159 women, held out by woman): 2.24 days average error vs 2.32 for a plain median.
+- A cycle about twice her usual length counts as a period that wasn't logged (`possible_missed_period` flag + date to ask her about), so one missed log can't push predictions weeks out.
+- Next period comes with an 80% range (`next_period_earliest` / `next_period_latest`), calibrated on held-out data.
+- Ovulation day = next period − 13 days (best fit to measured ovulation), shown as a 3-day window.
 - Confidence drops to low if her recent cycles differ by more than 9 days.
-- Flags: `period_late`, `no_period_90_days`, `high_variability`, `needs_more_data`.
+- Flags: `period_late`, `no_period_90_days`, `high_variability`, `needs_more_data`, `possible_missed_period`.
 - Everything is an estimate. The API marks it as one and the app must never present it as contraception.
 
 ## Before launch

@@ -88,6 +88,9 @@ class TodayOut(BaseModel):
     ovulation_day_estimate: int
     ovulation_date_estimate: date
     next_period_estimate: date
+    next_period_earliest: date
+    next_period_latest: date
+    possible_missed_period: date | None = None
     days_until_next_period: int
     confidence: str
     complete_cycles_logged: int
