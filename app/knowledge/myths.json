@@ -1,0 +1,73 @@
+{
+  "_meta": {
+    "verdicts": {
+      "not_supported": "research does not back this as a general rule",
+      "partly_true": "there is something to it, but the popular version goes too far",
+      "false": "research shows this is wrong"
+    }
+  },
+  "myths": [
+    {
+      "id": "myth-phase-training",
+      "phases": [
+        "follicular",
+        "ovulation",
+        "luteal",
+        "menstrual"
+      ],
+      "area": "movement",
+      "claim": "Train hard in your follicular phase and go easy in your luteal phase.",
+      "verdict": "not_supported",
+      "text": "Reviews of dozens of studies found phase effects on performance are tiny and inconsistent, and no effect of phase on strength gains from training. Your own energy is a better guide than a phase rule.",
+      "sources": [
+        "mcnulty2020",
+        "colensosemple2023"
+      ]
+    },
+    {
+      "id": "myth-28-day-14",
+      "phases": [
+        "follicular",
+        "ovulation"
+      ],
+      "area": "body",
+      "claim": "A normal cycle is 28 days and you ovulate on day 14.",
+      "verdict": "false",
+      "text": "In 600,000 cycles the average was about 29 days, and cycle length varied a lot between women and from month to month. Only about 1 in 4 women had their fertile window fully between days 10 and 17.",
+      "sources": [
+        "bull2019",
+        "fehring2006",
+        "najmabadi2020"
+      ]
+    },
+    {
+      "id": "myth-everyone-pms",
+      "phases": [
+        "luteal",
+        "menstrual"
+      ],
+      "area": "mood",
+      "claim": "Every woman gets mood swings before her period.",
+      "verdict": "not_supported",
+      "text": "PMS affects about 20-32% of women. In a review of 47 prospective studies, many found no link between mood and cycle phase at all. Whether it happens to you is personal, and your check-ins can show it.",
+      "sources": [
+        "romans2012",
+        "biggs2011"
+      ]
+    },
+    {
+      "id": "myth-cravings-willpower",
+      "phases": [
+        "luteal"
+      ],
+      "area": "food",
+      "claim": "Cravings before your period mean you lack willpower.",
+      "verdict": "false",
+      "text": "Appetite and cravings for chocolate, sweets and salt rise in the late luteal phase for many women, and energy use may go up a little too. It's a normal shift, not a character flaw.",
+      "sources": [
+        "gorczyca2016",
+        "davidsen2007"
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, cycle, guide
+from app.api import auth, cycle, guide, sync
 from app.config import get_settings
 from app.knowledge.loader import validate
 
@@ -28,6 +28,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(cycle.router)
 app.include_router(guide.router)
+app.include_router(sync.router)
 
 
 @app.get("/health", tags=["meta"])
