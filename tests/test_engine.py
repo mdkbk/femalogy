@@ -148,6 +148,7 @@ def test_unlogged_period_does_not_stretch_the_cycle():
     st = compute_status([date(2026, 9, 1), date(2026, 10, 22)], date(2026, 11, 4))
     assert 26 <= st.cycle_length_estimate <= 30  # not 51
     assert "possible_missed_period" in st.flags
+    assert st.confidence == Confidence.LOW
     assert date(2026, 9, 20) <= st.possible_missed_period <= date(2026, 10, 2)
     assert st.days_until_next_period < 20
 
