@@ -117,3 +117,23 @@ def test_calendar_cycles_forward():
     assert cal[0][1] == Phase.MENSTRUAL
     assert cal[28][1] == Phase.MENSTRUAL
     assert {p for _, p in cal} == set(Phase)
+
+
+def test_due_day_is_not_late_yet():
+    hist = starts(28, 28)
+    due = compute_status(hist, hist[-1] + timedelta(days=28))  # cycle day 29 = due day
+    assert due.phase == Phase.LUTEAL
+    assert "period_late" not in due.flags
+    late = compute_status(hist, hist[-1] + timedelta(days=29))
+    assert "period_late" in late.flags
+
+
+def test_calendar_first_day_matches_status_even_when_late():
+    hist = starts(28, 30)
+    st = compute_status(hist, hist[-1] + timedelta(days=34))
+    cal = phase_calendar(st, 40)
+    assert cal[0] == (st.today, st.phase) == (st.today, Phase.LUTEAL)
+    assert cal[1][1] == Phase.MENSTRUAL  # predicted period starts tomorrow
+    for offset in (0, 5, 13, 20):  # normal mid-cycle days agree too
+        s2 = compute_status(hist, hist[-1] + timedelta(days=offset))
+        assert phase_calendar(s2, 1)[0][1] == s2.phase

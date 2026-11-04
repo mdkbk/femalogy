@@ -78,3 +78,32 @@ def test_delete_account_removes_data(client, auth):
     assert client.delete("/me", headers=auth).status_code == 204
     with engine.connect() as c:
         assert c.execute(text("select count(*) from periods")).scalar() == 0
+
+
+def test_review_fixes(client, auth):
+    from datetime import date, timedelta
+
+    today = date.today()
+    a = client.post("/periods", headers=auth, json={"start_date": str(today - timedelta(days=60))}).json()
+    client.post("/periods", headers=auth, json={"start_date": str(today - timedelta(days=30))})
+    # editing a period onto another period's date is a clean 409, not a crash
+    r = client.patch(f"/periods/{a['id']}", headers=auth, json={"start_date": str(today - timedelta(days=30))})
+    assert r.status_code == 409
+    # a 'period' longer than 15 days is a typo
+    r = client.post("/periods", headers=auth, json={"start_date": "2026-01-01", "end_date": "2026-03-01"})
+    assert r.status_code == 422
+    # no check-ins in the future
+    assert client.put("/checkins", headers=auth, json={"day": str(today + timedelta(days=5))}).status_code == 422
+    # calendar's first day agrees with /today, and takes the user's date
+    on = str(today)
+    t = client.get("/today", headers=auth, params={"on": on}).json()
+    cal = client.get("/calendar", headers=auth, params={"on": on, "days": 3}).json()
+    assert cal[0]["date"] == on and cal[0]["phase"] == t["phase"]
+
+
+def test_cors_allows_local_frontend(client):
+    r = client.options(
+        "/today",
+        headers={"Origin": "http://localhost:5173", "Access-Control-Request-Method": "GET"},
+    )
+    assert r.headers.get("access-control-allow-origin") == "http://localhost:5173"

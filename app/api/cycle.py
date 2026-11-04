@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
@@ -14,6 +14,14 @@ from app.models import CheckIn, Period, User
 from app.schemas import CheckInIn, CheckInOut, PeriodIn, PeriodOut, RedFlag, TodayOut
 
 router = APIRouter(tags=["cycle"])
+
+# the server may be a day behind the user's timezone, so allow "tomorrow" in server time
+DATE_TOLERANCE = timedelta(days=1)
+
+
+def _not_future(day: date, what: str) -> None:
+    if day > date.today() + DATE_TOLERANCE:
+        raise HTTPException(422, f"Can't log {what} in the future")
 
 
 def _status_for(user: User, today: date):
@@ -33,8 +41,7 @@ def _red_flags(triggers: set[str]) -> list[RedFlag]:
 
 @router.post("/periods", response_model=PeriodOut, status_code=201)
 def log_period(body: PeriodIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
-    if body.start_date > date.today():
-        raise HTTPException(422, "Can't log a period in the future")
+    _not_future(body.start_date, "a period")
     period = Period(user_id=user.id, **body.model_dump())
     db.add(period)
     try:
@@ -55,8 +62,13 @@ def update_period(period_id: str, body: PeriodIn, user: User = Depends(current_u
     period = db.get(Period, period_id)
     if not period or period.user_id != user.id:
         raise HTTPException(404, "Period not found")
+    _not_future(body.start_date, "a period")
     period.start_date, period.end_date = body.start_date, body.end_date
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError as err:
+        db.rollback()
+        raise HTTPException(409, "A period already starts on that date") from err
     return period
 
 
@@ -100,8 +112,12 @@ def today_view(
 
 
 @router.get("/calendar")
-def calendar(days: int = Query(default=35, ge=1, le=120), user: User = Depends(current_user)):
-    st = _status_for(user, date.today())
+def calendar(
+    days: int = Query(default=35, ge=1, le=120),
+    on: date | None = Query(default=None, description="Start date; the app should send the user's local date"),
+    user: User = Depends(current_user),
+):
+    st = _status_for(user, on or date.today())
     if not st:
         raise HTTPException(409, "Log your last period start date first")
     return [{"date": d, "phase": p.value} for d, p in phase_calendar(st, days)]
@@ -112,6 +128,7 @@ def calendar(days: int = Query(default=35, ge=1, le=120), user: User = Depends(c
 @router.put("/checkins", response_model=CheckInOut)
 def upsert_checkin(body: CheckInIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
     """One check-in per day; sending the same day again updates it."""
+    _not_future(body.day, "a check-in")
     st = _status_for(user, body.day)
     existing = db.scalar(select(CheckIn).where(CheckIn.user_id == user.id, CheckIn.day == body.day))
     checkin = existing or CheckIn(user_id=user.id, day=body.day)

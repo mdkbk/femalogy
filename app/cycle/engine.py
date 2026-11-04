@@ -145,9 +145,10 @@ def compute_status(
 
     flags: list[str] = []
     if cycle_day > cycle_len:
-        # period is later than expected: she's still in luteal as far as we know
-        flags.append("period_late")
+        # period is due or late: she's still in luteal as far as we know
         phase = Phase.LUTEAL
+        if cycle_day > cycle_len + 1:  # day cycle_len + 1 is the due day itself
+            flags.append("period_late")
     else:
         phase = phase_for_day(cycle_day, period_len, ovulation_day)
 
@@ -185,12 +186,28 @@ def compute_status(
 def phase_calendar(
     status: CycleStatus, days_ahead: int = 35
 ) -> list[tuple[date, Phase]]:
-    """Predicted phase for each upcoming day, for the calendar view."""
-    out: list[tuple[date, Phase]] = []
-    for i in range(days_ahead):
+    """Predicted phase for each upcoming day, for the calendar view.
+
+    Day 0 always matches compute_status (same phase as /today). The current
+    cycle runs until the next period estimate; if that's today or already
+    passed (due/late), predicted cycles start from tomorrow.
+    """
+    cycle_len = status.cycle_length_estimate
+    anchor = status.next_period_estimate
+    if anchor <= status.today:
+        anchor = status.today + timedelta(days=1)
+
+    out: list[tuple[date, Phase]] = [(status.today, status.phase)]
+    for i in range(1, days_ahead):
         d = status.today + timedelta(days=i)
-        day = (d - status.cycle_start).days % status.cycle_length_estimate + 1
-        out.append(
-            (d, phase_for_day(day, status.period_length_estimate, status.ovulation_day_estimate))
-        )
+        if d < anchor:
+            day = (d - status.cycle_start).days + 1
+            phase = (
+                Phase.LUTEAL if day > cycle_len
+                else phase_for_day(day, status.period_length_estimate, status.ovulation_day_estimate)
+            )
+        else:
+            day = (d - anchor).days % cycle_len + 1
+            phase = phase_for_day(day, status.period_length_estimate, status.ovulation_day_estimate)
+        out.append((d, phase))
     return out
