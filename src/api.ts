@@ -42,6 +42,10 @@ export interface Today {
   ovulation_day_estimate: number
   ovulation_date_estimate: string
   next_period_estimate: string
+  next_period_earliest: string
+  next_period_latest: string
+  possible_missed_period: string | null
+  possible_missed_period_id: string | null
   days_until_next_period: number
   confidence: 'low' | 'medium' | 'high'
   complete_cycles_logged: number
@@ -238,6 +242,7 @@ export const api = {
   updatePeriod: (id: string, start_date: string, end_date: string | null) =>
     request<Period>(`/periods/${id}`, { method: 'PATCH', body: JSON.stringify({ start_date, end_date }) }),
   deletePeriod: (id: string) => request<void>(`/periods/${id}`, { method: 'DELETE' }),
+  confirmGap: (id: string) => request<Period>(`/periods/${id}/confirm-gap`, { method: 'POST' }),
 
   checkins: () => request<CheckIn[]>('/checkins'),
   saveCheckin: (c: CheckInInput) => request<CheckIn>('/checkins', { method: 'PUT', body: JSON.stringify(c) }),
