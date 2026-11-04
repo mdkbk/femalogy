@@ -1,0 +1,164 @@
+{
+  "bull2019": {
+    "authors": "Bull JR, Rowland SP, Scherwitzl EB, Scherwitzl R, Danielsson KG, Harper J",
+    "year": 2019,
+    "title": "Real-world menstrual cycle characteristics of more than 600,000 menstrual cycles",
+    "journal": "npj Digital Medicine",
+    "doi": "10.1038/s41746-019-0152-7",
+    "pmid": "31482137",
+    "finding": "Mean cycle 29.3 days, follicular 16.9 (95% CI 10-30), luteal 12.4 (95% CI 7-17). Cycle length falls ~0.18 days per year of age from 25 to 45."
+  },
+  "najmabadi2020": {
+    "authors": "Najmabadi S, Schliep KC, Simonsen SE, Porucznik CA, Egger MJ, Stanford JB",
+    "year": 2020,
+    "title": "Menstrual bleeding, cycle length, and follicular and luteal phase lengths in women without known subfertility: a pooled analysis of three cohorts",
+    "journal": "Paediatric and Perinatal Epidemiology",
+    "doi": "10.1111/ppe.12644",
+    "pmid": "32104920",
+    "finding": "581 women, 3,324 cycles. Menses 6.2 days, cycle 30.3 (median 29), follicular 18.5 (median 17), luteal 11.7 (median 12). Within-woman luteal length varied >3 days in 58.8% of women."
+  },
+  "fehring2006": {
+    "authors": "Fehring RJ, Schneider M, Raviele K",
+    "year": 2006,
+    "title": "Variability in the phases of the menstrual cycle",
+    "journal": "J Obstet Gynecol Neonatal Nurs",
+    "doi": "10.1111/j.1552-6909.2006.00051.x",
+    "pmid": "16700687",
+    "finding": "1,060 cycles: mean 28.9 days, 95% between 22 and 36. 42.5% of women varied >7 days. Only 25% had their whole fertile window between days 10 and 17. Follicular phase drives most variability."
+  },
+  "mcnulty2020": {
+    "authors": "McNulty KL, Elliott-Sale KJ, Dolan E, Swinton PA, Ansdell P, Goodall S, Thomas K, Hicks KM",
+    "year": 2020,
+    "title": "The effects of menstrual cycle phase on exercise performance in eumenorrheic women: a systematic review and meta-analysis",
+    "journal": "Sports Medicine",
+    "doi": "10.1007/s40279-020-01319-3",
+    "pmid": "32661839",
+    "finding": "78 studies. Performance might be trivially reduced in the early follicular phase (ES -0.06). Too small and variable for general guidelines; a personalised approach is recommended."
+  },
+  "colensosemple2023": {
+    "authors": "Colenso-Semple LM, D'Souza ACD, Elliott-Sale KJ, Phillips SM",
+    "year": 2023,
+    "title": "Current evidence shows no influence of women's menstrual cycle phase on acute strength performance or adaptations to resistance exercise training",
+    "journal": "Frontiers in Sports and Active Living",
+    "doi": "10.3389/fspor.2023.1054542",
+    "pmid": "37033884",
+    "finding": "Umbrella review: premature to conclude hormone fluctuations appreciably affect strength, performance or hypertrophy from resistance training."
+  },
+  "armour2019cochrane": {
+    "authors": "Armour M, Ee CC, Naidoo D, Ayati Z, Chalmers KJ, Steel KA, de Manincor MJ, Delshad E",
+    "year": 2019,
+    "title": "Exercise for dysmenorrhoea",
+    "journal": "Cochrane Database of Systematic Reviews",
+    "doi": "10.1002/14651858.CD004142.pub4",
+    "pmid": "31538328",
+    "finding": "Exercise 45-60 min, 3+ times/week, any intensity, may reduce menstrual pain by ~25 mm on a 100 mm VAS. Low-quality evidence."
+  },
+  "tsai2024": {
+    "authors": "Tsai IC, Hsu CW, Chang CH, Lei WT, Tseng PT, Chang KV",
+    "year": 2024,
+    "title": "Comparative effectiveness of different exercises for reducing pain intensity in primary dysmenorrhea: a systematic review and network meta-analysis of randomized controlled trials",
+    "journal": "Sports Medicine - Open",
+    "doi": "10.1186/s40798-024-00718-4",
+    "pmid": "38816591",
+    "finding": "29 RCTs, 1,808 participants. All exercise types reduced menstrual pain at 8 weeks; relaxation exercise most effective and lowest dropout."
+  },
+  "armour2019selfcare": {
+    "authors": "Armour M, Smith CA, Steel KA, Macmillan F",
+    "year": 2019,
+    "title": "The effectiveness of self-care and lifestyle interventions in primary dysmenorrhea: a systematic review and meta-analysis",
+    "journal": "BMC Complementary and Alternative Medicine",
+    "doi": "10.1186/s12906-019-2433-8",
+    "pmid": "30654775",
+    "finding": "23 trials, 2,302 women. Exercise large effect, heat and acupressure moderate. Exercise and heat more effective than analgesics for pain intensity."
+  },
+  "jo2018": {
+    "authors": "Jo J, Lee SH",
+    "year": 2018,
+    "title": "Heat therapy for primary dysmenorrhea: a systematic review and meta-analysis of its effects on pain relief and quality of life",
+    "journal": "Scientific Reports",
+    "doi": "10.1038/s41598-018-34303-z",
+    "pmid": "30389956",
+    "finding": "6 RCTs. Heating pads better than analgesics (SMD -0.72). Suggestive evidence, small trials."
+  },
+  "daily2015": {
+    "authors": "Daily JW, Zhang X, Kim DS, Park S",
+    "year": 2015,
+    "title": "Efficacy of ginger for alleviating the symptoms of primary dysmenorrhea: a systematic review and meta-analysis of randomized clinical trials",
+    "journal": "Pain Medicine",
+    "doi": "10.1111/pme.12853",
+    "pmid": "26177393",
+    "finding": "4 placebo RCTs: 750-2000 mg ginger powder in the first 3-4 days reduced pain. Suggestive evidence."
+  },
+  "gorczyca2016": {
+    "authors": "Gorczyca AM, Sjaarda LA, Mitchell EM, Perkins NJ, Schliep KC, Wactawski-Wende J, Mumford SL",
+    "year": 2016,
+    "title": "Changes in macronutrient, micronutrient, and food group intakes throughout the menstrual cycle in healthy, premenopausal women",
+    "journal": "European Journal of Nutrition",
+    "doi": "10.1007/s00394-015-0931-0",
+    "pmid": "26043860",
+    "finding": "259 women. Protein intake highest mid-luteal. Appetite and cravings for chocolate, sweets and salt higher in the late luteal phase."
+  },
+  "davidsen2007": {
+    "authors": "Davidsen L, Vistisen B, Astrup A",
+    "year": 2007,
+    "title": "Impact of the menstrual cycle on determinants of energy balance: a putative role in weight loss attempts",
+    "journal": "International Journal of Obesity",
+    "doi": "10.1038/sj.ijo.0803699",
+    "pmid": "17684511",
+    "finding": "Review: in the luteal phase energy intake and expenditure appear higher, with more cravings for high-carb and high-fat foods."
+  },
+  "munro2023": {
+    "authors": "Munro MG, Mast AE, Powers JM, Kouides PA, O'Brien SH, Richards T, Lavin M, Levy BS",
+    "year": 2023,
+    "title": "The relationship between heavy menstrual bleeding, iron deficiency, and iron deficiency anemia",
+    "journal": "American Journal of Obstetrics and Gynecology",
+    "doi": "10.1016/j.ajog.2023.01.017",
+    "pmid": "36706856",
+    "finding": "Heavy menstrual bleeding is highly prevalent and a major contributor to iron deficiency and anaemia; often normalised by women and clinicians."
+  },
+  "thysjacobs1998": {
+    "authors": "Thys-Jacobs S, Starkey P, Bernstein D, Tian J",
+    "year": 1998,
+    "title": "Calcium carbonate and the premenstrual syndrome: effects on premenstrual and menstrual symptoms",
+    "journal": "American Journal of Obstetrics and Gynecology",
+    "doi": "10.1016/s0002-9378(98)70377-1",
+    "pmid": "9731851",
+    "finding": "466 women, 1200 mg/day calcium for 3 cycles: 48% reduction in total symptom score vs 30% on placebo."
+  },
+  "walker1998": {
+    "authors": "Walker AF, De Souza MC, Vickers MF, Abeyasekera S, Collins ML, Trinca LA",
+    "year": 1998,
+    "title": "Magnesium supplementation alleviates premenstrual symptoms of fluid retention",
+    "journal": "Journal of Women's Health",
+    "doi": "10.1089/jwh.1998.7.1157",
+    "pmid": "9861593",
+    "finding": "38 women, 200 mg/day Mg: no effect in month 1; reduced fluid-retention symptoms (bloating, breast tenderness, swelling) in month 2."
+  },
+  "romans2012": {
+    "authors": "Romans S, Clarkson R, Einstein G, Petrovic M, Stewart D",
+    "year": 2012,
+    "title": "Mood and the menstrual cycle: a review of prospective data studies",
+    "journal": "Gender Medicine",
+    "doi": "10.1016/j.genm.2012.07.003",
+    "pmid": "23036262",
+    "finding": "47 studies: 38.3% found no mood-cycle link, only 14.9% linked negative mood to the premenstrual phase alone. No clear evidence of a premenstrual negative mood syndrome in the general population."
+  },
+  "biggs2011": {
+    "authors": "Biggs WS, Demuth RH",
+    "year": 2011,
+    "title": "Premenstrual syndrome and premenstrual dysphoric disorder",
+    "journal": "American Family Physician",
+    "doi": "10.1891/9780826159311.0143",
+    "pmid": "22010771",
+    "finding": "PMS affects 20-32% of premenopausal women, PMDD 3-8%. Limited evidence for calcium, vitamin D and B6."
+  },
+  "baker2007": {
+    "authors": "Baker FC, Driver HS",
+    "year": 2007,
+    "title": "Circadian rhythms, sleep, and the menstrual cycle",
+    "journal": "Sleep Medicine",
+    "doi": "10.1016/j.sleep.2006.09.011",
+    "pmid": "17383933",
+    "finding": "Body temperature is higher in the luteal phase. Subjective sleep quality is lowest around menses; sleep timing and structure fairly stable otherwise."
+  }
+}
