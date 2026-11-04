@@ -1,0 +1,312 @@
+{
+  "_meta": {
+    "version": "0.1.0",
+    "status": "draft - needs review by a gynecologist and a nutritionist before launch",
+    "grades": {
+      "strong": "large cohorts or consistent systematic reviews",
+      "moderate": "systematic reviews of small or low-quality trials, or one large RCT",
+      "weak": "single small trials",
+      "personal": "research does not support a general rule; the app learns it from her own check-ins"
+    },
+    "areas": {
+      "movement": {
+        "title": "Movement",
+        "categories": [
+          "movement"
+        ]
+      },
+      "food": {
+        "title": "Food",
+        "categories": [
+          "food_nutrition",
+          "drinks"
+        ]
+      },
+      "sleep": {
+        "title": "Sleep and rest",
+        "categories": [
+          "habits_rest",
+          "temperature"
+        ]
+      },
+      "mood": {
+        "title": "Mood and energy",
+        "categories": [
+          "emotions",
+          "energy_mood"
+        ]
+      },
+      "body": {
+        "title": "Body",
+        "categories": [
+          "body"
+        ]
+      }
+    }
+  },
+  "phases": {
+    "menstrual": {
+      "title": "Menstrual phase",
+      "summary": "Your period. The uterine lining sheds. For most people this lasts about 4-7 days.",
+      "tips": [
+        {
+          "id": "men-body-1",
+          "category": "body",
+          "text": "Cramps, lower back ache and tiredness are common now. Note how bad they are each day so you can see your pattern.",
+          "grade": "strong",
+          "sources": [
+            "biggs2011"
+          ]
+        },
+        {
+          "id": "men-heat-1",
+          "category": "temperature",
+          "text": "A heat pad or hot water bottle on your lower belly can ease cramps. In trials it worked about as well as, or better than, common painkillers.",
+          "grade": "moderate",
+          "sources": [
+            "jo2018",
+            "armour2019selfcare"
+          ]
+        },
+        {
+          "id": "men-move-1",
+          "category": "movement",
+          "text": "Gentle movement is fine if you feel like it. Rest is fine too. Exercise done regularly through the whole month is what's linked to less period pain.",
+          "grade": "moderate",
+          "sources": [
+            "armour2019cochrane",
+            "tsai2024"
+          ]
+        },
+        {
+          "id": "men-move-2",
+          "category": "movement",
+          "text": "Relaxation exercises, stretching and yoga reduced period pain in trials and had the lowest dropout.",
+          "grade": "moderate",
+          "sources": [
+            "tsai2024"
+          ]
+        },
+        {
+          "id": "men-food-1",
+          "category": "food_nutrition",
+          "text": "Heavy periods are a common cause of low iron. Iron-rich foods (red meat, lentils, beans, leafy greens) plus vitamin C help. If you feel very tired or dizzy, ask a doctor to check your iron.",
+          "grade": "strong",
+          "sources": [
+            "munro2023"
+          ]
+        },
+        {
+          "id": "men-drink-1",
+          "category": "drinks",
+          "text": "Ginger tea is a nice option. Ginger powder (750-2000 mg) in the first 3-4 days eased cramps in small trials. Ask a pharmacist before taking supplements.",
+          "grade": "weak",
+          "sources": [
+            "daily2015"
+          ]
+        },
+        {
+          "id": "men-sleep-1",
+          "category": "habits_rest",
+          "text": "Sleep often feels worst around your period. An earlier night or a lighter evening can help.",
+          "grade": "moderate",
+          "sources": [
+            "baker2007"
+          ]
+        },
+        {
+          "id": "men-mood-1",
+          "category": "energy_mood",
+          "text": "Energy is often lower now, but it's different for everyone. Your check-ins will show what your period is like for you.",
+          "grade": "personal",
+          "sources": [
+            "mcnulty2020",
+            "romans2012"
+          ]
+        }
+      ]
+    },
+    "follicular": {
+      "title": "Follicular phase",
+      "summary": "After your period ends, estrogen rises as your body gets ready to ovulate. This phase changes length the most from cycle to cycle.",
+      "tips": [
+        {
+          "id": "fol-body-1",
+          "category": "body",
+          "text": "This is the part of your cycle that stretches or shrinks the most, which is why your period date can move around.",
+          "grade": "strong",
+          "sources": [
+            "fehring2006",
+            "bull2019"
+          ]
+        },
+        {
+          "id": "fol-move-1",
+          "category": "movement",
+          "text": "Train the way that feels right. Research hasn't found that you should train harder or easier in a particular phase, so your own energy is the better guide.",
+          "grade": "personal",
+          "sources": [
+            "mcnulty2020",
+            "colensosemple2023"
+          ]
+        },
+        {
+          "id": "fol-food-1",
+          "category": "food_nutrition",
+          "text": "No special diet is needed for this phase. Keep up iron-rich foods if your period was heavy.",
+          "grade": "strong",
+          "sources": [
+            "munro2023"
+          ]
+        },
+        {
+          "id": "fol-mood-1",
+          "category": "energy_mood",
+          "text": "Many people feel their energy pick up after their period ends. Your check-ins will show if that's true for you.",
+          "grade": "personal",
+          "sources": [
+            "romans2012"
+          ]
+        }
+      ]
+    },
+    "ovulation": {
+      "title": "Ovulation (estimated)",
+      "summary": "An egg is released. This is an estimate: ovulation can move by several days between cycles, so don't use it for birth control.",
+      "tips": [
+        {
+          "id": "ovu-body-1",
+          "category": "body",
+          "text": "Only about 1 in 4 women always ovulate between days 10 and 17, so treat this window as a rough guide.",
+          "grade": "strong",
+          "sources": [
+            "fehring2006"
+          ]
+        },
+        {
+          "id": "ovu-temp-1",
+          "category": "temperature",
+          "text": "After ovulation your body temperature goes up a little and stays higher until your next period.",
+          "grade": "moderate",
+          "sources": [
+            "baker2007"
+          ]
+        },
+        {
+          "id": "ovu-move-1",
+          "category": "movement",
+          "text": "No phase-specific training rule is backed by research. Go by how you feel today.",
+          "grade": "personal",
+          "sources": [
+            "mcnulty2020",
+            "colensosemple2023"
+          ]
+        }
+      ]
+    },
+    "luteal": {
+      "title": "Luteal phase",
+      "summary": "After ovulation, progesterone rises. It usually lasts about 12 days and ends when your period starts.",
+      "tips": [
+        {
+          "id": "lut-food-1",
+          "category": "food_nutrition",
+          "text": "Feeling hungrier, or craving chocolate, sweets or salt, is common late in this phase. It's normal, not a lack of willpower.",
+          "grade": "moderate",
+          "sources": [
+            "gorczyca2016",
+            "davidsen2007"
+          ]
+        },
+        {
+          "id": "lut-food-2",
+          "category": "food_nutrition",
+          "text": "Regular meals with protein and fibre can help with cravings. Protein intake tends to go up naturally in this phase.",
+          "grade": "moderate",
+          "sources": [
+            "gorczyca2016"
+          ]
+        },
+        {
+          "id": "lut-pms-1",
+          "category": "emotions",
+          "text": "About 1 in 4 women get PMS (20-32%) and 3-8% get the more severe PMDD. Many women notice no mood change at all. Your check-ins will show your own pattern.",
+          "grade": "strong",
+          "sources": [
+            "biggs2011",
+            "romans2012"
+          ]
+        },
+        {
+          "id": "lut-pms-2",
+          "category": "food_nutrition",
+          "text": "If PMS hits you hard, calcium is one of the better-studied options: in one large trial, symptoms dropped 48% vs 30% on placebo. Talk to a doctor before starting supplements.",
+          "grade": "moderate",
+          "sources": [
+            "thysjacobs1998",
+            "biggs2011"
+          ]
+        },
+        {
+          "id": "lut-bloat-1",
+          "category": "body",
+          "text": "Bloating and breast tenderness can show up before your period. Magnesium helped these in one small trial, after 2 months.",
+          "grade": "weak",
+          "sources": [
+            "walker1998"
+          ]
+        },
+        {
+          "id": "lut-temp-1",
+          "category": "temperature",
+          "text": "Your body runs a little warmer now, so a cooler bedroom may help you sleep.",
+          "grade": "moderate",
+          "sources": [
+            "baker2007"
+          ]
+        },
+        {
+          "id": "lut-move-1",
+          "category": "movement",
+          "text": "Keep moving if it feels good. Regular exercise across the month is linked to less period pain next time.",
+          "grade": "moderate",
+          "sources": [
+            "armour2019cochrane"
+          ]
+        },
+        {
+          "id": "lut-mood-1",
+          "category": "energy_mood",
+          "text": "Some women feel lower energy or more irritable before their period, many don't. After 2 cycles of check-ins, Femalogy will tell you what this phase is usually like for you.",
+          "grade": "personal",
+          "sources": [
+            "romans2012"
+          ]
+        }
+      ]
+    }
+  },
+  "red_flags": [
+    {
+      "id": "rf-no-period",
+      "trigger": "no_period_90_days",
+      "text": "You haven't logged a period in over 90 days. Please check in with a doctor."
+    },
+    {
+      "id": "rf-heavy",
+      "trigger": "symptom:very_heavy_bleeding",
+      "text": "Soaking through a pad or tampon every hour, or passing large clots, is worth getting checked by a doctor."
+    },
+    {
+      "id": "rf-pain",
+      "trigger": "symptom:severe_pain",
+      "text": "Pain that stops you doing normal things, or doesn't ease with painkillers, should be checked by a doctor."
+    },
+    {
+      "id": "rf-variability",
+      "trigger": "high_variability",
+      "text": "Your cycle length has been changing a lot. That can be normal, but if it keeps happening, mention it to a doctor."
+    }
+  ],
+  "disclaimer": "Femalogy gives general information, not medical advice. Phase dates are estimates and must not be used for contraception."
+}
