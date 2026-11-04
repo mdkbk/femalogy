@@ -248,6 +248,7 @@ def compute_status(
         possible_missed = b - timedelta(days=lengths[missed_i] // 2)
         missed_before = b
         flags.append("possible_missed_period")
+        confidence = Confidence.LOW  # until she tells us what happened in that gap
 
     return CycleStatus(
         today=today,
