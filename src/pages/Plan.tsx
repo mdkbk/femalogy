@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { api, localToday, toISO, type CalendarDay, type Period } from '../api'
+import { api, localToday, toISO, type CalendarDay } from '../api'
+import { PeriodSheet } from '../components/PeriodSheet'
 import { ErrorBox, FirstPeriod, Loading, PhaseLegend } from '../components/ui'
 import { daysBetween, fmtDayMonth, fmtShort, monthName, parseISO, PHASE, useLoad } from '../lib'
 
@@ -71,52 +72,13 @@ function Calendar({ month, setMonth, today }: { month: Date; setMonth: (d: Date)
   )
 }
 
-function PeriodRow({ p, onChange }: { p: Period; onChange: () => void }) {
-  const [editing, setEditing] = useState(false)
-  const [start, setStart] = useState(p.start_date)
-  const [end, setEnd] = useState(p.end_date ?? '')
-  const [err, setErr] = useState('')
-  const len = p.end_date ? daysBetween(p.start_date, p.end_date) + 1 : null
-  if (!editing) {
-    return (
-      <li>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <strong>{fmtDayMonth(p.start_date)}{p.end_date ? ` to ${fmtDayMonth(p.end_date)}` : ''}</strong>
-          <span className="small muted">{len ? `${len} days` : 'End not logged yet'}</span>
-        </div>
-        <button type="button" className="btn small quiet" aria-label={`Edit period starting ${fmtDayMonth(p.start_date)}`} onClick={() => setEditing(true)}>Edit</button>
-      </li>
-    )
-  }
-  return (
-    <li style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-      <div className="row">
-        <label className="field">Started<input type="date" value={start} max={localToday()} onChange={(e) => setStart(e.target.value)} /></label>
-        <label className="field">Ended<input type="date" value={end} min={start} max={localToday()} onChange={(e) => setEnd(e.target.value)} /></label>
-      </div>
-      {err && <p className="error small" role="alert">{err}</p>}
-      <div className="row">
-        <button type="button" className="btn small" onClick={async () => {
-          try { await api.updatePeriod(p.id, start, end || null); setEditing(false); onChange() } catch (x) { setErr((x as Error).message) }
-        }}>Save</button>
-        <button type="button" className="btn small quiet" onClick={() => setEditing(false)}>Cancel</button>
-        <button type="button" className="btn small quiet" style={{ color: '#9c3a2a' }} onClick={async () => {
-          await api.deletePeriod(p.id); onChange()
-        }}>Delete</button>
-      </div>
-    </li>
-  )
-}
-
 export default function Plan() {
   const today = localToday()
   const [month, setMonth] = useState(() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1) })
   const [version, setVersion] = useState(0)
   const plan = useLoad(() => api.plan(today, 56), [version])
   const periods = useLoad(() => api.periods(), [version])
-  const [start, setStart] = useState(today)
-  const [end, setEnd] = useState('')
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [logging, setLogging] = useState(false)
   const refresh = () => setVersion((v) => v + 1)
 
   if (plan.error?.status === 409) {
@@ -170,38 +132,29 @@ export default function Plan() {
         </div>
 
         <div className="side">
-          <section className="card" aria-labelledby="log-title" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <h2 id="log-title" style={{ fontSize: 22, fontWeight: 600 }}>Log a period</h2>
-            <form style={{ display: 'flex', flexDirection: 'column', gap: 14 }} onSubmit={async (e) => {
-              e.preventDefault()
-              try {
-                await api.addPeriod(start, end || null)
-                setMsg({ ok: true, text: 'Saved. Your phases are updated.' })
-                setEnd('')
-                refresh()
-              } catch (x) {
-                setMsg({ ok: false, text: (x as Error).message })
-              }
-            }}>
-              <div className="row">
-                <label className="field">Started<input type="date" required value={start} max={today} onChange={(e) => setStart(e.target.value)} /></label>
-                <label className="field">Ended (optional)<input type="date" value={end} min={start} max={today} onChange={(e) => setEnd(e.target.value)} /></label>
-              </div>
-              <button className="btn">Save period</button>
-            </form>
-            {msg && <p role="status" className={msg.ok ? 'success small' : 'error small'}>{msg.text}</p>}
-            <p className="small muted">Still bleeding? Leave the end empty and add it later.</p>
-          </section>
-
-          <section className="card" aria-labelledby="hist-title" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <section className="card" aria-labelledby="hist-title" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <h2 id="hist-title" style={{ fontSize: 22, fontWeight: 600 }}>Your periods</h2>
+            <p className="small muted">Every estimate comes from these dates, so the more you log, the better it gets.</p>
+            <button type="button" className="btn" onClick={() => setLogging(true)}>
+              <span className="dot" style={{ background: '#fff' }} aria-hidden="true" />
+              Edit period days
+            </button>
             {periods.data && periods.data.length === 0 && <p className="muted small">Nothing logged yet.</p>}
             <ul className="history">
-              {[...(periods.data ?? [])].reverse().map((p) => <PeriodRow key={p.id + p.start_date + p.end_date} p={p} onChange={refresh} />)}
+              {[...(periods.data ?? [])].reverse().map((p) => {
+                const len = p.end_date ? daysBetween(p.start_date, p.end_date) + 1 : null
+                return (
+                  <li key={p.id}>
+                    <strong>{fmtDayMonth(p.start_date)}{p.end_date && p.end_date !== p.start_date ? ` to ${fmtDayMonth(p.end_date)}` : ''}</strong>
+                    <span className="small muted">{len ? `${len} day${len === 1 ? '' : 's'}` : 'still going'}</span>
+                  </li>
+                )
+              })}
             </ul>
           </section>
         </div>
       </div>
+      <PeriodSheet open={logging} onClose={() => setLogging(false)} onSaved={refresh} />
     </main>
   )
 }
