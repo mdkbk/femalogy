@@ -46,7 +46,7 @@ def _insight_out(i: Insight) -> InsightOut:
         area = SYMPTOM_AREA.get(i.key, "body")
         text = (f"You often log {SYMPTOM.get(i.key, i.key)} in your {where}: "
                 f"{round(i.phase_value * 100)}% of those check-ins, across {i.cycles} cycles.")
-        suggestion = "The research tips for this phase below may help."
+        suggestion = "Your sync plan has research tips for this phase that may help."
     return InsightOut(id=i.id, kind=i.kind, key=i.key, phase=i.phase.value, direction=i.direction,
                       area=area, text=text, suggestion=suggestion, cycles=i.cycles, checkins=i.checkins)
 
