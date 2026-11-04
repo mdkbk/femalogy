@@ -122,3 +122,73 @@ class CheckInOut(CheckInIn):
     id: str
     phase_at_checkin: str | None
     red_flags: list[RedFlag] = []
+
+
+class Myth(BaseModel):
+    id: str
+    claim: str
+    verdict: str
+    verdict_label: str
+    text: str
+    area: str
+    phases: list[str]
+    sources: list[Source]
+
+
+class InsightOut(BaseModel):
+    id: str
+    kind: str
+    key: str
+    phase: str
+    direction: str
+    area: str
+    text: str
+    suggestion: str
+    cycles: int
+    checkins: int
+
+
+class PatternsOut(BaseModel):
+    status: str  # "learning" until she has check-ins from enough cycles
+    cycles_with_checkins: int
+    cycles_needed: int
+    checkins_used: int
+    insights: list[InsightOut]
+
+
+class SyncArea(BaseModel):
+    id: str
+    title: str
+    personal: list[InsightOut]
+    tips: list[Tip]
+    myths: list[Myth]
+
+
+class SyncOut(BaseModel):
+    date: date
+    phase: str
+    phase_title: str
+    phase_summary: str
+    cycle_day: int
+    personal_status: str
+    cycles_with_checkins: int
+    cycles_needed: int
+    areas: list[SyncArea]
+    disclaimer: str
+
+
+class PlanBlock(BaseModel):
+    phase: str
+    title: str
+    start: date
+    end: date
+    days: int
+    is_prediction: bool
+    personal: list[InsightOut]
+
+
+class PlanOut(BaseModel):
+    start: date
+    blocks: list[PlanBlock]
+    personal_status: str
+    disclaimer: str
