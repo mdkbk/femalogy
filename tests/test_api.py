@@ -107,3 +107,20 @@ def test_cors_allows_local_frontend(client):
         headers={"Origin": "http://localhost:5173", "Access-Control-Request-Method": "GET"},
     )
     assert r.headers.get("access-control-allow-origin") == "http://localhost:5173"
+
+
+def test_missed_period_question_and_confirm(client, auth):
+    from datetime import date, timedelta
+
+    today = date.today()
+    a = client.post("/periods", headers=auth, json={"start_date": str(today - timedelta(days=64))}).json()
+    b = client.post("/periods", headers=auth, json={"start_date": str(today - timedelta(days=13))}).json()
+    t = client.get("/today", headers=auth).json()
+    assert "possible_missed_period" in t["flags"]
+    assert t["possible_missed_period_id"] == b["id"]
+    assert t["next_period_earliest"] <= t["next_period_estimate"] <= t["next_period_latest"]
+    assert client.post(f"/periods/{b['id']}/confirm-gap", headers=auth).status_code == 200
+    t2 = client.get("/today", headers=auth).json()
+    assert "possible_missed_period" not in t2["flags"]
+    assert t2["cycle_length_estimate"] > t["cycle_length_estimate"]
+    assert client.post(f"/periods/{a['id']}x/confirm-gap", headers=auth).status_code == 404

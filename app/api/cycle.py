@@ -30,7 +30,8 @@ def _status_for(user: User, today: date):
         return None
     lengths = [(p.end_date - p.start_date).days + 1 for p in periods if p.end_date]
     settings = CycleSettings(user.avg_cycle_length, user.avg_period_length)
-    return compute_status([p.start_date for p in periods], today, settings, lengths or None)
+    confirmed = {p.start_date for p in periods if p.gap_confirmed}
+    return compute_status([p.start_date for p in periods], today, settings, lengths or None, confirmed)
 
 
 def _red_flags(triggers: set[str]) -> list[RedFlag]:
@@ -72,6 +73,17 @@ def update_period(period_id: str, body: PeriodIn, user: User = Depends(current_u
     return period
 
 
+@router.post("/periods/{period_id}/confirm-gap", response_model=PeriodOut)
+def confirm_gap(period_id: str, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """She says the long gap before this period was a real cycle, not a period she forgot to log."""
+    period = db.get(Period, period_id)
+    if not period or period.user_id != user.id:
+        raise HTTPException(404, "Period not found")
+    period.gap_confirmed = True
+    db.commit()
+    return period
+
+
 @router.delete("/periods/{period_id}", status_code=204)
 def delete_period(period_id: str, user: User = Depends(current_user), db: Session = Depends(get_db)):
     period = db.get(Period, period_id)
@@ -106,6 +118,8 @@ def today_view(
         next_period_earliest=st.next_period_earliest,
         next_period_latest=st.next_period_latest,
         possible_missed_period=st.possible_missed_period,
+        possible_missed_period_id=next(
+            (p.id for p in user.periods if p.start_date == st.possible_missed_before), None),
         days_until_next_period=st.days_until_next_period,
         confidence=st.confidence.value,
         complete_cycles_logged=st.complete_cycles_logged,
