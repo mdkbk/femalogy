@@ -143,14 +143,25 @@ p { margin: 0; }
 
 .skeleton { background: linear-gradient(90deg, #f3e6e1, #faf0ec, #f3e6e1); background-size: 200% 100%; border-radius: 24px; animation: fxPulse 1.4s ease-in-out infinite; }
 
-/* ---------- Today hero ---------- */
-.period-quick {
-  display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; margin-top: 4px;
-  background: rgba(255, 255, 255, 0.6); border-radius: 20px;
+/* ---------- period sheet (tap the days you bled) ---------- */
+.sheet {
+  border: none; padding: 0; border-radius: 28px; width: min(440px, calc(100vw - 32px));
+  background: var(--card); color: var(--ink); box-shadow: 0 24px 60px rgba(59, 42, 48, 0.25);
 }
-.period-quick .btn.quiet { border-color: #e3c3c8; }
-.linklike { border: none; background: none; padding: 0; min-height: 44px; font-weight: 700; color: var(--accent); text-decoration: underline; font-size: 14px; }
-.linklike:hover { color: var(--accent-hover); }
+.sheet::backdrop { background: rgba(59, 42, 48, 0.35); }
+.sheet[open] { animation: fxUp 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.sheet-body { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+.pday {
+  aspect-ratio: 1; min-height: 44px; border-radius: 50%; border: 1.5px dashed #e0c4c9;
+  background: #fff; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center;
+  transition: transform 0.12s ease, background 0.12s;
+}
+.pday:hover:not(:disabled) { transform: scale(1.06); }
+.pday.on { background: #c0465f; border: 1.5px solid #c0465f; color: #fff; }
+.pday.today { box-shadow: 0 0 0 2.5px var(--ink); }
+.pday:disabled { border-style: solid; border-color: transparent; color: #b9a8ad; cursor: default; }
+
+/* ---------- Today hero ---------- */
 .hero {
   border-radius: 36px; padding: clamp(24px, 5vw, 44px);
   display: flex; flex-wrap: wrap; align-items: center; gap: clamp(24px, 5vw, 44px);
