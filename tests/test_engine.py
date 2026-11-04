@@ -179,3 +179,10 @@ def test_ovulation_uses_13_day_luteal():
     hist = starts(29, 29)
     st = compute_status(hist, hist[-1])
     assert st.ovulation_day_estimate == st.cycle_length_estimate - 13
+
+
+def test_confirmed_long_cycle_is_not_split():
+    a, b = date(2026, 9, 1), date(2026, 10, 22)
+    st = compute_status([a, b], date(2026, 11, 4), confirmed_gaps={b})
+    assert "possible_missed_period" not in st.flags
+    assert st.cycle_length_estimate > 32  # she said 51 days was real: it now counts (blended)

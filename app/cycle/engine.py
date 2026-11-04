@@ -88,6 +88,7 @@ class CycleStatus:
     next_period_earliest: date | None = None
     next_period_latest: date | None = None
     possible_missed_period: date | None = None  # ask her: did a period start around here?
+    possible_missed_before: date | None = None  # start date of the period that ends that gap
     flags: list[str] = field(default_factory=list)
 
 
@@ -98,16 +99,17 @@ def cycle_lengths(period_starts: list[date]) -> list[int]:
     return [n for n in lengths if MIN_CYCLE <= n <= MAX_CYCLE]
 
 
-def split_missed(lengths: list[int]) -> tuple[list[float], int | None]:
+def split_missed(lengths: list[int], keep: frozenset[int] = frozenset()) -> tuple[list[float], int | None]:
     """A cycle about twice her usual length is most likely a period that wasn't
-    logged. Count it as two cycles of half the length. Returns the cleaned
-    lengths and the index of the last cycle that looked like a missed log."""
+    logged. Count it as two cycles of half the length. Cycles she confirmed as
+    real (indexes in `keep`) are left alone. Returns the cleaned lengths and
+    the index of the last cycle that looked like a missed log."""
     out: list[float] = []
     last_missed = None
     for i, x in enumerate(lengths):
         others = [y for j, y in enumerate(lengths) if j != i]
         ref = median(others) if len(others) >= 2 else POP_MEAN
-        if x >= 40 and 1.6 * ref <= x <= 2.4 * ref:
+        if i not in keep and x >= 40 and 1.6 * ref <= x <= 2.4 * ref:
             out += [x / 2, x / 2]
             last_missed = i
         else:
@@ -124,9 +126,9 @@ def _clip(h: list[float]) -> list[float]:
     return [min(max(x, mid - spread), mid + spread) for x in h]
 
 
-def _blend(lengths: list[int], settings: CycleSettings) -> tuple[float, float]:
+def _blend(lengths: list[int], settings: CycleSettings, keep: frozenset[int] = frozenset()) -> tuple[float, float]:
     """(estimate, predictive SD) for her next cycle length."""
-    cleaned, _ = split_missed(lengths)
+    cleaned, _ = split_missed(lengths, keep)
     h = _clip(cleaned[-CYCLES_FOR_ESTIMATE:])
     if not h and settings.avg_cycle_length:
         h = [float(settings.avg_cycle_length)]  # her onboarding answer counts as one cycle
@@ -179,6 +181,7 @@ def compute_status(
     today: date,
     settings: CycleSettings | None = None,
     period_lengths: list[int] | None = None,
+    confirmed_gaps: set[date] | None = None,
 ) -> CycleStatus:
     """Main entry point. period_starts = every logged period start date."""
     settings = settings or CycleSettings()
@@ -187,7 +190,10 @@ def compute_status(
         raise ValueError("need at least one period start date on or before today")
 
     lengths = cycle_lengths(starts)
-    est, sd = _blend(lengths, settings)
+    # cycles she confirmed as real long cycles, by the start date that ends them
+    ends = [b for a, b in pairwise(starts) if MIN_CYCLE <= (b - a).days <= MAX_CYCLE]
+    keep = frozenset(i for i, b in enumerate(ends) if b in (confirmed_gaps or set()))
+    est, sd = _blend(lengths, settings, keep)
     cycle_len = round(est)
     half_range = max(1, round(RANGE_Z * sd))
 
@@ -217,7 +223,7 @@ def compute_status(
     if cycle_day > NO_PERIOD_RED_FLAG_DAYS:
         flags.append("no_period_90_days")
 
-    cleaned = [round(x) for x in split_missed(lengths)[0]]
+    cleaned = [round(x) for x in split_missed(lengths, keep)[0]]
     confidence = estimate_confidence(cleaned)
     recent = cleaned[-CYCLES_FOR_ESTIMATE:]
     if len(recent) >= 2 and max(recent) - min(recent) > HIGH_VARIABILITY_RANGE:
@@ -235,11 +241,12 @@ def compute_status(
 
     # a gap that looks like an unlogged period: point at roughly when it was
     possible_missed = None
-    real = sorted(set(starts))
-    _, missed_i = split_missed(lengths)
-    if missed_i is not None and len(lengths) == len(real) - 1:
-        a, b = real[missed_i], real[missed_i + 1]
-        possible_missed = a + (b - a) / 2
+    missed_before = None
+    _, missed_i = split_missed(lengths, keep)
+    if missed_i is not None:
+        b = ends[missed_i]
+        possible_missed = b - timedelta(days=lengths[missed_i] // 2)
+        missed_before = b
         flags.append("possible_missed_period")
 
     return CycleStatus(
@@ -258,6 +265,7 @@ def compute_status(
         next_period_earliest=earliest,
         next_period_latest=latest,
         possible_missed_period=possible_missed,
+        possible_missed_before=missed_before,
         flags=flags,
     )
 

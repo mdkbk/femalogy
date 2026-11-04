@@ -91,6 +91,7 @@ class TodayOut(BaseModel):
     next_period_earliest: date
     next_period_latest: date
     possible_missed_period: date | None = None
+    possible_missed_period_id: str | None = None  # the period after the gap, for /confirm-gap
     days_until_next_period: int
     confidence: str
     complete_cycles_logged: int
