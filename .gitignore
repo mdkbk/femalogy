@@ -1,8 +1,22 @@
-# secrets and local data: never commit
+# ---- secrets: never commit ----
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets/
+
+# ---- local data (real cycle and health data lives here) ----
 *.db
 *.db-journal
-# per-machine tools and installs
+*.sqlite
+*.sqlite3
+*.bundle
+research/data/
+*.csv
+
+# ---- per-machine tools and installs ----
 .venv/
 .tools/
 node_modules/
@@ -13,4 +27,8 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
+
+# ---- editor / OS clutter ----
 .DS_Store
+.vscode/
+.idea/
