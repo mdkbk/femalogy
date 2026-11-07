@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
+import { FlowBackground, HeroDrips } from '../components/FlowBackground'
 import { PeriodSheet } from '../components/PeriodSheet'
 import { useAuth } from '../auth'
 import { CycleRing, Disclaimer, ErrorBox, FirstPeriod, InfoIcon, InsightCard, Loading, MythCard, TipCard, WarnIcon } from '../components/ui'
@@ -53,8 +54,11 @@ export default function Today() {
   const progress = Math.min(1, s.cycles_with_checkins / s.cycles_needed)
 
   return (
-    <main className="page">
-      <section aria-labelledby="phase-title" className="hero fx-up" style={{ background: ph.tint }}>
+    <>
+    <FlowBackground phase={t.phase} />
+    <main className="page with-waves">
+      <section aria-labelledby="phase-title" className="hero fx-up glass has-drips" style={{ background: `${ph.tint}E0` }}>
+        <HeroDrips phase={t.phase} />
         <div className="hero-ring">
           <CycleRing day={t.cycle_day} length={t.cycle_length_estimate} periodLength={t.period_length_estimate}
             ovulationDay={t.ovulation_day_estimate} phase={t.phase} />
@@ -123,7 +127,7 @@ export default function Today() {
       )}
 
       <section aria-label="Cycle estimates" className="fx-up fx-d1" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div className="strip">
+        <div className="strip glass">
           <Link to="/plan" className="stat fx-card">
             <span className="label">Next period</span>
             <span className="value" style={{ color: 'var(--accent)' }}>
@@ -201,5 +205,6 @@ export default function Today() {
       <Disclaimer>{s.disclaimer}</Disclaimer>
       <PeriodSheet open={logging} startMonth={sheetMonth} onClose={() => setLogging(false)} onSaved={reload} />
     </main>
+    </>
   )
 }
