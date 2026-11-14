@@ -58,13 +58,42 @@ def test_cross_site_requests_are_blocked(client):
     assert client.post("/periods", headers=WEB, json={"start_date": "2026-01-01"}).status_code == 201
 
 
-def test_login_is_rate_limited_per_email(client):
-    client.post("/auth/register", headers=APP, json={"email": "r@x.com", "password": PW, "consent": True})
-    for _ in range(5):
-        r = client.post("/auth/login", headers=APP, data={"username": "r@x.com", "password": "wrong-guess-1"})
+def _fail(client, email, n):
+    for _ in range(n):
+        r = client.post("/auth/login", headers=APP, data={"username": email, "password": "wrong-guess-1"})
         assert r.status_code == 401
+
+
+def test_ten_wrong_tries_then_a_five_minute_pause(client):
+    client.post("/auth/register", headers=APP, json={"email": "r@x.com", "password": PW, "consent": True})
+    _fail(client, "r@x.com", 9)
+    _fail(client, "r@x.com", 1)  # 10th wrong try still gets the normal message
     r = client.post("/auth/login", headers=APP, data={"username": "r@x.com", "password": PW})
-    assert r.status_code == 429  # even the right password waits out the lock
+    assert r.status_code == 429  # even the right password waits out the pause
+    assert "5 minutes" in r.json()["detail"]
+
+
+def test_pause_ends_after_five_minutes(client):
+    from datetime import timedelta
+
+    from app.models import LoginAttempt
+
+    client.post("/auth/register", headers=APP, json={"email": "p@x.com", "password": PW, "consent": True})
+    _fail(client, "p@x.com", 10)
+    with SessionLocal() as db:  # pretend the tries happened 6 minutes ago
+        for a in db.scalars(select(LoginAttempt).where(LoginAttempt.kind == "login")):
+            a.created_at = a.created_at - timedelta(minutes=6)
+        db.commit()
+    r = client.post("/auth/login", headers=APP, data={"username": "p@x.com", "password": PW})
+    assert r.status_code == 200
+
+
+def test_successful_sign_in_resets_the_count(client):
+    client.post("/auth/register", headers=APP, json={"email": "s@x.com", "password": PW, "consent": True})
+    _fail(client, "s@x.com", 9)
+    assert client.post("/auth/login", headers=APP, data={"username": "s@x.com", "password": PW}).status_code == 200
+    _fail(client, "s@x.com", 9)  # a fresh 9: still no pause
+    assert client.post("/auth/login", headers=APP, data={"username": "s@x.com", "password": PW}).status_code == 200
 
 
 def test_attempts_store_no_emails_or_ips(client):

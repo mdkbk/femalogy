@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response, 
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
-from app.api.deps import current_session, current_user
+from app.api.deps import aware, current_session, current_user
 from app.config import get_settings
 from app.db import get_db
 from app.models import CheckIn, LoginAttempt, User, UserSession
@@ -22,10 +22,13 @@ from app.security import (
 
 router = APIRouter(tags=["auth"])
 
-# Rate limits (rolling windows). Tuned to stop guessing, not to annoy someone who mistypes.
+# Login limits: gentle for people, useless for password-guessing scripts.
+# After 10 wrong tries on one email (30 from one network) within 15 minutes, wait 5 minutes.
+# A successful sign-in resets that email's count.
 WINDOW = timedelta(minutes=15)
-MAX_FAILS_PER_EMAIL = 5
-MAX_FAILS_PER_IP = 20
+PAUSE = timedelta(minutes=5)
+MAX_FAILS_PER_EMAIL = 10
+MAX_FAILS_PER_IP = 30
 MAX_SIGNUPS_PER_IP_HOUR = 10
 # The mobile app (later) asks for the token in the response body; the web app never sees it.
 APP_CLIENT_HEADER = "x-femalogy-client"
@@ -55,9 +58,31 @@ def _record(db: Session, kind: str, ip_h: str, email_h: str | None, success: boo
     db.commit()
 
 
-def _too_many() -> HTTPException:
+def _too_many(wait: timedelta = timedelta(hours=1)) -> HTTPException:
+    minutes = max(1, -(-int(wait.total_seconds()) // 60))  # round up
+    unit = "minute" if minutes == 1 else "minutes"
     return HTTPException(status.HTTP_429_TOO_MANY_REQUESTS,
-                         "Too many attempts. Please wait 15 minutes and try again.")
+                         f"Too many tries. Please wait {minutes} {unit} and try again.")
+
+
+def _login_pause(db: Session, email_h: str, ip_h: str) -> timedelta | None:
+    """How long she still has to wait, or None if she can try now."""
+    now = _now()
+    last_ok = db.scalar(select(func.max(LoginAttempt.created_at)).where(
+        LoginAttempt.kind == "login", LoginAttempt.success.is_(True), LoginAttempt.email_hash == email_h))
+    since = max(now - WINDOW, aware(last_ok)) if last_ok else now - WINDOW
+    for col, value, limit, start in (("email_hash", email_h, MAX_FAILS_PER_EMAIL, since),
+                                     ("ip_hash", ip_h, MAX_FAILS_PER_IP, now - WINDOW)):
+        fails = select(LoginAttempt.created_at).where(
+            LoginAttempt.kind == "login", LoginAttempt.success.is_(False),
+            getattr(LoginAttempt, col) == value, LoginAttempt.created_at > start)
+        count = db.scalar(select(func.count()).select_from(fails.subquery())) or 0
+        if count >= limit:
+            last_fail = aware(db.scalar(select(func.max(fails.subquery().c.created_at))))
+            wait = last_fail + PAUSE - now
+            if wait > timedelta(0):
+                return wait
+    return None
 
 
 def _start_session(db: Session, user: User, request: Request, response: Response) -> SessionOut:
@@ -103,10 +128,9 @@ def login(request: Request, response: Response, username: str = Form(...), passw
           db: Session = Depends(get_db)):
     email = username.strip().lower()
     ip_h, email_h = keyed_hash(_ip(request)), keyed_hash(email)
-    since = _now() - WINDOW
-    if (_count(db, since=since, kind="login", success=False, email_hash=email_h) >= MAX_FAILS_PER_EMAIL
-            or _count(db, since=since, kind="login", success=False, ip_hash=ip_h) >= MAX_FAILS_PER_IP):
-        raise _too_many()
+    wait = _login_pause(db, email_h, ip_h)
+    if wait:
+        raise _too_many(wait)
     user = db.scalar(select(User).where(User.email == email))
     if user:
         ok = verify_password(password, user.password_hash)

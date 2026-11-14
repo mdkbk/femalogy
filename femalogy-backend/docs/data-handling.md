@@ -29,7 +29,7 @@ Render and Neon are processors acting on our behalf. Before real users, sign the
 ## How access is protected
 
 - **Sign-in:** Argon2id passwords. Common and very weak passwords are refused. Unknown emails and wrong passwords get the same message and take the same time, so attackers can't tell which emails have accounts.
-- **Brute force:** 5 failed logins per email per 15 minutes, 20 per IP, and 10 sign-ups per IP per hour. Per-email is the real protection, since IPs can be rotated.
+- **Brute force:** after 10 wrong passwords for one email (or 30 from one network) within 15 minutes, sign-in pauses for 5 minutes, with a message saying how long to wait. A successful sign-in resets the count. Sign-ups are limited to 10 per network per hour. Per-email is the real protection, since IPs can be rotated.
 - **Sessions:** random 256-bit tokens, 30 days. Signing out deletes the session on the server. "Sign out on all devices" deletes all of them.
 - **Cross-site requests:** any request that changes data must come from Femalogy's own pages. The Origin header is checked, so other sites can't act with her cookie.
 - **Headers:** a strict Content-Security-Policy (only our own scripts, styles and fonts), HSTS, no framing, nosniff, and a locked-down Permissions-Policy.
