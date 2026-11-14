@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth'
+import { BloodWaves } from '../components/FlowBackground'
 import { LockIcon, Logo } from '../components/ui'
 
 export default function Welcome() {
@@ -16,13 +17,14 @@ export default function Welcome() {
 
   return (
     <div className="welcome">
+      <BloodWaves />
       <header style={{ maxWidth: 1120, width: '100%', margin: '0 auto', padding: '18px 24px' }}>
         <div className="brand"><Logo /><span>femalogy</span></div>
       </header>
       <main>
-        <section className="fx-up" style={{ flex: '999 1 420px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <section className="fx-up welcome-intro">
           <h1>Cycle syncing, <span style={{ color: 'var(--accent)', fontStyle: 'italic' }}>backed by research.</span></h1>
-          <p style={{ fontSize: 19, color: 'var(--ink-2)', maxWidth: 520 }}>
+          <p className="welcome-lead">
             Femalogy shows which phase you're in, what research really says about it, and over time, how each phase actually feels for you.
           </p>
           <ul className="points">

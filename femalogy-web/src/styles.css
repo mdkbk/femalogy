@@ -291,9 +291,34 @@ fieldset.card legend { float: left; padding: 0; font-family: var(--serif); font-
 }
 
 /* ---------- welcome ---------- */
-.welcome { min-height: 100vh; display: flex; flex-direction: column; }
-.welcome main { flex: 1; max-width: 1120px; width: 100%; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-wrap: wrap; align-items: center; gap: 48px; }
+.welcome { min-height: 100vh; display: flex; flex-direction: column; position: relative; }
+.welcome > header, .welcome > main { position: relative; z-index: 1; }
+/* content sits high so the blood waves have the lower part of the screen to themselves */
+.welcome main { flex: 1; max-width: 1120px; width: 100%; margin: 0 auto; padding: 24px 24px calc(min(40vh, 380px) + 24px); display: flex; flex-wrap: wrap; align-items: flex-start; gap: 48px; }
+.welcome .auth-card { box-shadow: 0 16px 40px rgba(74, 7, 22, 0.18); background: rgba(255, 255, 255, 0.96); }
+/* fixed to the bottom of the screen; height capped so it never climbs into the text */
+.blood-waves { position: fixed; left: 0; right: 0; bottom: 0; height: min(40vh, 380px); pointer-events: none; z-index: 0; overflow: hidden; opacity: 0.85; }
+@media (max-width: 760px) {
+  .blood-waves { height: 22vh; opacity: 0.8; }
+  .welcome main { padding-bottom: calc(22vh + 16px); }
+}
 .welcome h1 { font-weight: 400; font-size: clamp(40px, 7vw, 56px); line-height: 1.05; letter-spacing: -0.02em; max-width: 560px; }
+.welcome-intro { flex: 999 1 420px; display: flex; flex-direction: column; gap: 24px; }
+.welcome-lead { font-size: 19px; color: var(--ink-2); max-width: 520px; }
+/* shorter laptop screens: tighter intro, lower waves, so text never sits on the red */
+@media (min-width: 761px) and (max-height: 880px) {
+  .welcome-intro { gap: 16px; }
+  .welcome h1 { font-size: 48px; }
+  .welcome-lead { font-size: 17px; }
+  .welcome .points { gap: 8px; }
+  .welcome .points .ic { width: 34px; height: 34px; }
+  .welcome main { padding-top: 8px; }
+  .blood-waves { height: min(36vh, 330px); }
+}
+@media (min-width: 761px) and (max-height: 760px) {
+  .welcome .points li span.muted { display: none; }
+  .blood-waves { height: 28vh; }
+}
 .points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
 .points li { display: flex; gap: 14px; align-items: flex-start; }
 .points .ic { flex: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }

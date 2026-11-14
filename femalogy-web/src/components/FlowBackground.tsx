@@ -63,3 +63,35 @@ export function HeroDrips({ phase }: { phase: Phase }) {
     </div>
   )
 }
+
+// Landing page: deeper "blood" waves only, with a thin wet shine along each crest.
+const BLOOD = [
+  { id: 'back', top: '#D35A72', bottom: '#A3304A', height: '100%', duration: 36, reverse: false, bob: 0, shine: 0.25,
+    d: 'M0,70 C320,10 320,130 640,70 S960,10 1280,70 S1600,130 1920,70 S2240,10 2560,70' },
+  { id: 'mid', top: '#B0263F', bottom: '#7A1429', height: '80%', duration: 24, reverse: true, bob: -3, shine: 0.22,
+    d: 'M0,80 C320,30 320,130 640,80 S960,30 1280,80 S1600,130 1920,80 S2240,30 2560,80' },
+  { id: 'front', top: '#8A1530', bottom: '#4A0716', height: '56%', duration: 17, reverse: false, bob: -6, shine: 0.18,
+    d: 'M0,90 C320,50 320,130 640,90 S960,50 1280,90 S1600,130 1920,90 S2240,50 2560,90' },
+]
+
+export function BloodWaves() {
+  return (
+    <div className="blood-waves" aria-hidden="true">
+      {BLOOD.map((w) => (
+        <div key={w.id} className="wave-bob" style={{ animationDelay: `${w.bob}s` }}>
+          <svg className="wave-slide" viewBox="0 0 2560 200" preserveAspectRatio="none"
+            style={{ height: w.height, animationDuration: `${w.duration}s`, animationDirection: w.reverse ? 'reverse' : 'normal' }}>
+            <defs>
+              <linearGradient id={`blood-${w.id}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor={w.top} />
+                <stop offset="1" stopColor={w.bottom} />
+              </linearGradient>
+            </defs>
+            <path d={`${w.d} V200 H0 Z`} fill={`url(#blood-${w.id})`} />
+            <path d={w.d} fill="none" stroke="#fff" strokeOpacity={w.shine} strokeWidth="2" />
+          </svg>
+        </div>
+      ))}
+    </div>
+  )
+}
