@@ -27,11 +27,16 @@ class User(Base):
     avg_cycle_length: Mapped[int | None] = mapped_column(Integer)
     avg_period_length: Mapped[int | None] = mapped_column(Integer)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    # when she explicitly agreed to Femalogy storing her cycle and health data (GDPR art. 9)
+    consented_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     periods: Mapped[list["Period"]] = relationship(
         back_populates="user", cascade="all, delete-orphan", order_by="Period.start_date"
     )
     checkins: Mapped[list["CheckIn"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
+    sessions: Mapped[list["UserSession"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"
     )
 
@@ -67,3 +72,30 @@ class CheckIn(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     user: Mapped[User] = relationship(back_populates="checkins")
+
+
+class UserSession(Base):
+    """A signed-in device. Only the SHA-256 of the session token is stored."""
+
+    __tablename__ = "user_sessions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+    user: Mapped[User] = relationship(back_populates="sessions")
+
+
+class LoginAttempt(Base):
+    """For rate limiting. Email and IP are stored only as keyed hashes; rows are pruned after a day."""
+
+    __tablename__ = "login_attempts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    kind: Mapped[str] = mapped_column(String(16))  # "login" or "register"
+    email_hash: Mapped[str | None] = mapped_column(String(64), index=True)
+    ip_hash: Mapped[str] = mapped_column(String(64), index=True)
+    success: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, index=True)

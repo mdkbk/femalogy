@@ -16,8 +16,9 @@
   --warn-bg: #fbe9e4;
   --warn-line: #e7b3a6;
   --warn-ink: #5e2219;
-  --serif: 'Fraunces', Georgia, serif;
-  --sans: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* fonts ship with the app (no Google Fonts request, so visitors' IPs never go to a third party) */
+  --serif: 'Fraunces Variable', Georgia, serif;
+  --sans: 'Nunito Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --shadow: 0 1px 2px rgba(59, 42, 48, 0.06);
   --shadow-lift: 0 12px 30px rgba(59, 42, 48, 0.1);
   color-scheme: light;
@@ -88,6 +89,8 @@ p { margin: 0; }
 }
 .menu button:hover { background: var(--blush); }
 .menu button.danger { color: #9c3a2a; }
+.menu-link { padding: 12px; border-radius: 12px; font-weight: 600; color: var(--ink); text-decoration: none; }
+.menu-link:hover { background: var(--blush); color: var(--ink); }
 
 .page { max-width: 1040px; margin: 0 auto; padding: 40px 24px 80px; display: flex; flex-direction: column; gap: 32px; }
 .page.narrow { max-width: 760px; gap: 20px; }
@@ -298,6 +301,11 @@ fieldset.card legend { float: left; padding: 0; font-family: var(--serif); font-
 .seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 999px; background: var(--blush); }
 .seg button { min-height: 44px; border-radius: 999px; border: none; background: transparent; font-size: 15px; font-weight: 700; }
 .seg button[aria-selected='true'] { background: #fff; }
+.consent { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--ink-2); line-height: 1.45; }
+.consent input { width: 20px; height: 20px; margin: 1px 0 0; flex: none; accent-color: var(--accent); }
+.prose { display: flex; flex-direction: column; gap: 14px; }
+.prose h2 { font-size: 24px; font-weight: 600; margin-top: 12px; }
+.prose ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
 
 @media (max-width: 560px) {
   .topbar-inner { padding: 12px 16px; }

@@ -6,8 +6,11 @@ import { Layout, Loading } from './components/ui'
 import Checkin from './pages/Checkin'
 import Guide from './pages/Guide'
 import Plan from './pages/Plan'
+import Privacy from './pages/Privacy'
 import Today from './pages/Today'
 import Welcome from './pages/Welcome'
+import '@fontsource-variable/fraunces'
+import '@fontsource-variable/nunito-sans'
 import './styles.css'
 
 function App() {
@@ -15,7 +18,14 @@ function App() {
   if (!ready) {
     return <main className="page"><Loading /></main>
   }
-  if (!user) return <Welcome />
+  if (!user) {
+    return (
+      <Routes>
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="*" element={<Welcome />} />
+      </Routes>
+    )
+  }
   return (
     <Routes>
       <Route element={<Layout />}>
@@ -23,6 +33,7 @@ function App() {
         <Route path="plan" element={<Plan />} />
         <Route path="check-in" element={<Checkin />} />
         <Route path="guide" element={<Guide />} />
+        <Route path="privacy" element={<Privacy />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

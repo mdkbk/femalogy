@@ -1,7 +1,8 @@
 // Typed client for the Femalogy API. Shapes mirror app/schemas.py in the backend.
 
-const BASE = import.meta.env.VITE_API_URL ?? '/api'
-const TOKEN_KEY = 'femalogy.token'
+// The API lives on the same address as the app (/api), so the browser sends the
+// httpOnly session cookie automatically. No token is ever readable by page scripts.
+const BASE = '/api'
 
 export type Phase = 'menstrual' | 'follicular' | 'ovulation' | 'luteal'
 
@@ -147,22 +148,6 @@ export class ApiError extends Error {
   }
 }
 
-export function getToken(): string | null {
-  try {
-    return localStorage.getItem(TOKEN_KEY)
-  } catch {
-    return null
-  }
-}
-export function setToken(token: string | null) {
-  try {
-    if (token) localStorage.setItem(TOKEN_KEY, token)
-    else localStorage.removeItem(TOKEN_KEY)
-  } catch {
-    /* storage blocked: the session just won't survive a reload */
-  }
-}
-
 let onUnauthorized: () => void = () => {}
 export function setUnauthorizedHandler(fn: () => void) {
   onUnauthorized = fn
@@ -182,19 +167,17 @@ function messageFrom(body: unknown, fallback: string): string {
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
-  const token = getToken()
-  if (token) headers.set('Authorization', `Bearer ${token}`)
   if (init.body && typeof init.body === 'string') headers.set('Content-Type', 'application/json')
   let res: Response
   try {
-    res = await fetch(`${BASE}${path}`, { ...init, headers })
+    res = await fetch(`${BASE}${path}`, { ...init, headers, credentials: 'same-origin' })
   } catch {
     throw new ApiError(0, "Can't reach the Femalogy server. Is the backend running?")
   }
   if (res.status === 204) return undefined as T
   const body = await res.json().catch(() => null)
   if (!res.ok) {
-    if (res.status === 401 && token) onUnauthorized()
+    if (res.status === 401 && !path.startsWith('/auth/')) onUnauthorized()
     throw new ApiError(res.status, messageFrom(body, `Something went wrong (${res.status})`))
   }
   return body as T
@@ -218,17 +201,21 @@ const q = (params: Record<string, string | number | undefined>) => {
 }
 
 export const api = {
-  register: (email: string, password: string, display_name?: string) =>
-    request<{ access_token: string }>('/auth/register', {
+  register: (email: string, password: string, display_name: string | undefined, consent: boolean) =>
+    request<{ ok: boolean }>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password, display_name: display_name || null }),
+      body: JSON.stringify({ email, password, display_name: display_name || null, consent }),
     }),
   login: (email: string, password: string) =>
-    request<{ access_token: string }>('/auth/login', {
+    request<{ ok: boolean }>('/auth/login', {
       method: 'POST',
       body: new URLSearchParams({ username: email, password }),
     }),
+  logout: () => request<void>('/auth/logout', { method: 'POST' }),
+  logoutEverywhere: () => request<void>('/auth/logout-everywhere', { method: 'POST' }),
   me: () => request<Profile>('/me'),
+  /** Download link for everything we store about her (opens as a file). */
+  exportUrl: `${BASE}/me/export`,
   deleteMe: () => request<void>('/me', { method: 'DELETE' }),
 
   today: (on = localToday()) => request<Today>(`/today${q({ on })}`),

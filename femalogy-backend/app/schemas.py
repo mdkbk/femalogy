@@ -7,11 +7,14 @@ class RegisterIn(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
     display_name: str | None = Field(default=None, max_length=100)
+    # explicit consent to storing cycle and health data; sign-up is refused without it
+    consent: bool = False
 
 
-class TokenOut(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
+class SessionOut(BaseModel):
+    ok: bool = True
+    # only for the mobile app (header X-Femalogy-Client: app); the web app gets an httpOnly cookie instead
+    access_token: str | None = None
 
 
 class ProfileIn(BaseModel):

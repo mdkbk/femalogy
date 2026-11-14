@@ -50,7 +50,7 @@ export function LockIcon({ color = 'currentColor' }: { color?: string }) {
 }
 
 function AccountMenu() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, clear } = useAuth()
   const [open, setOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -77,7 +77,12 @@ function AccountMenu() {
       {open && (
         <div className="menu">
           <p>{user?.email}</p>
-          <button type="button" onClick={() => { signOut(); navigate('/') }}>Sign out</button>
+          <button type="button" onClick={async () => { await signOut(); navigate('/') }}>Sign out</button>
+          <button type="button" onClick={async () => { await api.logoutEverywhere(); clear(); navigate('/') }}>
+            Sign out on all devices
+          </button>
+          <a className="menu-link" href={api.exportUrl} download="femalogy-my-data.json">Download my data</a>
+          <NavLink className="menu-link" to="/privacy" onClick={() => setOpen(false)}>How we handle your data</NavLink>
           {!confirming ? (
             <button type="button" className="danger" onClick={() => setConfirming(true)}>Delete my account</button>
           ) : (
@@ -86,7 +91,7 @@ function AccountMenu() {
               className="danger"
               onClick={async () => {
                 await api.deleteMe()
-                signOut()
+                clear() // the server already ended the session with the account
                 navigate('/')
               }}
             >

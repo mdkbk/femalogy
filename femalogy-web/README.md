@@ -19,7 +19,7 @@ Type check and production build:
 PATH="$PWD/.tools/node/bin:$PATH" npm run build     # output in dist/
 ```
 
-For production, set `VITE_API_URL` to the public API address at build time, and add the site's address to the backend's `CORS_ORIGINS`.
+In production the backend serves this app's built files itself (see the root `Dockerfile`), so the app and `/api` share one address and the session cookie just works. Nothing to configure.
 
 ## Screens
 

@@ -23,6 +23,10 @@ cd femalogy-web && ./setup.sh       # first time
 
 The backend needs a `.env`: copy `femalogy-backend/.env.example` and fill in the two secrets (see the backend README).
 
+## Put it online (Render + Neon, EU)
+
+One container serves the app and the API from the same address (`Dockerfile` at the repo root). `render.yaml` sets it up in Frankfurt; the database is Neon Postgres, also in Frankfurt. Step-by-step: [femalogy-backend/docs/deploy.md](femalogy-backend/docs/deploy.md). What's stored and how it's protected: [femalogy-backend/docs/data-handling.md](femalogy-backend/docs/data-handling.md).
+
 ## How predictions work
 
 Fitted and backtested on real cycle data. See [femalogy-backend/docs/prediction-model.md](femalogy-backend/docs/prediction-model.md).

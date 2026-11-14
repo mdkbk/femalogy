@@ -1,0 +1,20 @@
+# Render Blueprint: one web service in Frankfurt (EU). The database is Neon (also Frankfurt).
+# In Render: New > Blueprint > pick this repo. It will ask for the two secret values below.
+services:
+  - type: web
+    name: femalogy
+    runtime: docker
+    region: frankfurt
+    plan: free            # sleeps when idle (slow first load); "starter" keeps it always on
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true   # Render creates a random secret
+      - key: DATABASE_URL
+        sync: false           # paste the Neon connection string
+      - key: FIELD_ENCRYPTION_KEY
+        sync: false           # paste a key made on your Mac (see README); keep a copy somewhere safe

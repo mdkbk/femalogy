@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../auth'
 import { LockIcon, Logo } from '../components/ui'
 
@@ -10,6 +11,7 @@ export default function Welcome() {
   const [password, setPassword] = useState('')
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
+  const [consent, setConsent] = useState(false)
   const up = mode === 'signup'
 
   return (
@@ -53,7 +55,7 @@ export default function Welcome() {
             setBusy(true)
             setErr('')
             try {
-              if (up) await signUp(email, password, name.trim() || undefined)
+              if (up) await signUp(email, password, name.trim() || undefined, consent)
               else await signIn(email, password)
             } catch (x) {
               setErr((x as Error).message)
@@ -73,13 +75,25 @@ export default function Welcome() {
               <input type="password" required minLength={up ? 8 : undefined} autoComplete={up ? 'new-password' : 'current-password'}
                 value={password} onChange={(e) => setPassword(e.target.value)} />
             </label>
-            {up && <p className="small muted" style={{ marginTop: -8 }}>At least 8 characters.</p>}
+            {up && <p className="small muted" style={{ marginTop: -8 }}>At least 8 characters. Avoid common passwords.</p>}
+            {up && (
+              <label className="consent">
+                <input type="checkbox" required checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+                <span>
+                  I agree that Femalogy stores my cycle and health information to give me my estimates and plan,
+                  as explained in <Link to="/privacy">how we handle your data</Link>. I can download or delete it any time.
+                </span>
+              </label>
+            )}
             {err && <p className="error small" role="alert">{err}</p>}
             <button className="btn" disabled={busy} style={{ minHeight: 52, fontSize: 17 }}>
               {busy ? 'One moment…' : up ? 'Create my account' : 'Sign in'}
             </button>
           </form>
-          <p className="small muted" style={{ textAlign: 'center' }}>General information, not medical advice. Dates are estimates and not for contraception.</p>
+          <p className="small muted" style={{ textAlign: 'center' }}>
+            General information, not medical advice. Dates are estimates and not for contraception.
+            {' '}<Link to="/privacy">How we handle your data</Link>
+          </p>
         </section>
       </main>
     </div>

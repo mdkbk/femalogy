@@ -1,0 +1,14 @@
+# keep secrets, local data and per-machine installs out of the image
+**/.env
+**/.env.*
+!**/.env.example
+**/*.db
+**/.venv
+**/.tools
+**/node_modules
+**/dist
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+.git
+*.bundle

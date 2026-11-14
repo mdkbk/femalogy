@@ -2,18 +2,20 @@
 
 Python API for Femalogy: cycle tracking + a phase guide where every tip has a peer-reviewed source and an evidence grade.
 
-Stack: FastAPI · PostgreSQL 16 · SQLAlchemy 2 · Alembic · Argon2 + JWT · Fernet field encryption.
+Stack: FastAPI · PostgreSQL 16 · SQLAlchemy 2 · Alembic · Argon2id passwords · server-side sessions in httpOnly cookies · Fernet field encryption.
+
+All endpoints live under `/api`. In production the same server also serves the built web app, so everything is one address. Security and data handling: [docs/data-handling.md](docs/data-handling.md).
 
 ## Run it
 
 With Docker (easiest):
 
 ```bash
-cp .env.example .env        # then fill JWT_SECRET and FIELD_ENCRYPTION_KEY
+cp .env.example .env        # then fill SECRET_KEY and FIELD_ENCRYPTION_KEY
 docker compose up --build
 ```
 
-API on http://localhost:8000, interactive docs on http://localhost:8000/docs.
+API on http://localhost:8000/api, interactive docs on http://localhost:8000/api/docs (docs are off in production).
 
 Without Docker:
 
@@ -28,7 +30,7 @@ uvicorn app.main:app --reload
 Generate the two secrets:
 
 ```bash
-python -c "import secrets; print(secrets.token_urlsafe(48))"                                  # JWT_SECRET
+python -c "import secrets; print(secrets.token_urlsafe(48))"                                  # SECRET_KEY
 python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"     # FIELD_ENCRYPTION_KEY
 ```
 

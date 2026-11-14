@@ -10,13 +10,18 @@ def test_health(client):
 
 
 def test_register_login_me(client):
-    r = client.post("/auth/register", json={"email": "A@x.com", "password": "password123"})
+    from tests.conftest import APP
+
+    body = {"email": "A@x.com", "password": "cycle-tracker-7", "consent": True}
+    r = client.post("/auth/register", headers=APP, json=body)
     assert r.status_code == 201
-    assert client.post("/auth/register", json={"email": "a@x.com", "password": "password123"}).status_code == 409
-    r = client.post("/auth/login", data={"username": "a@x.com", "password": "password123"})
+    r = client.post("/auth/register", headers=APP, json={**body, "email": "a@x.com"})
+    assert r.status_code == 409
+    r = client.post("/auth/login", headers=APP, data={"username": "a@x.com", "password": "cycle-tracker-7"})
     h = {"Authorization": f"Bearer {r.json()['access_token']}"}
     assert client.get("/me", headers=h).json()["email"] == "a@x.com"
-    assert client.post("/auth/login", data={"username": "a@x.com", "password": "nope-nope"}).status_code == 401
+    r = client.post("/auth/login", headers=APP, data={"username": "a@x.com", "password": "nope-nope"})
+    assert r.status_code == 401
 
 
 def test_requires_auth(client):
@@ -99,14 +104,6 @@ def test_review_fixes(client, auth):
     t = client.get("/today", headers=auth, params={"on": on}).json()
     cal = client.get("/calendar", headers=auth, params={"on": on, "days": 3}).json()
     assert cal[0]["date"] == on and cal[0]["phase"] == t["phase"]
-
-
-def test_cors_allows_local_frontend(client):
-    r = client.options(
-        "/today",
-        headers={"Origin": "http://localhost:5173", "Access-Control-Request-Method": "GET"},
-    )
-    assert r.headers.get("access-control-allow-origin") == "http://localhost:5173"
 
 
 def test_missed_period_question_and_confirm(client, auth):
